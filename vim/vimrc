@@ -1,0 +1,990 @@
+"********************************************************************
+" Filename: $HOME/.vimrc
+" Purpose:  configuration file for the vim text editor
+" Authors:  John Magolske + vimrc bits & tips from numerous sources
+" License:  GPL v3
+" Location: http://B79.net/vim/vimrc.txt
+" Revision: 2010/01/23 Sat 15:33 PST
+"********************************************************************
+
+" Use Vim rather then Vi settings (must be first; changes other options)
+set nocompatible
+
+set runtimepath=~/.vim,$VIMRUNTIME
+
+"let &termencoding = &encoding
+"set encoding=utf-8
+
+
+" -------- Appearance --------
+
+" turn off visual & audio bell
+set vb t_vb=
+
+" leave a one character wide foldcolumn on the left side of the window
+set fdc=1
+
+" when wrapping long lines, do not break words
+set lbr
+
+" display as much as possible of the last line (minimize @'s)
+set display=lastline
+
+" min # of screen columns to keep left and right of the cursor when `nowrap' is set
+set sidescrolloff=1
+" min # of columns to scroll horizontally when the cursor moves off the screen
+set sidescroll=1
+
+"set helpheight=999      " full-screen help window
+
+" set color scheme
+colo jfm
+
+" Switch syntax highlighting on when the terminal has colors.
+" Also switch on highlighting the last used search pattern.
+if &t_Co > 2 || has("gui_running")
+  syntax on
+  set hlsearch
+endif
+
+" so the title of file being edited shows up in title-bar
+set title
+
+" text-cursor color by mode in xterm, linux console and screen.linux console:
+" normal mode = golden, insert mode = green, return to green when leaving vim
+if &term =~ "xterm"
+    :silent !echo -ne "\033]12;GoldenRod\007"
+    set t_SI+=]12;green
+    set t_EI+=]12;GoldenRod
+    autocmd VimLeave * :!echo -ne "\033]12;green\007"
+    " show 'Vim, filename' in xterm title bar
+    set titlestring=\%(\%M%)%t\ (Vim)
+    " Set xterm to 16 colors (don't I want more?)
+    set t_Co=16
+endif
+if &term == "linux" && !has("gui_running")
+    set t_ve+=[?17;183;95c  " yellow
+    au InsertEnter * set t_ve+=[?17;207;111c  " green
+    au InsertLeave * set t_ve+=[?17;183;95c  " yellow
+    autocmd VimLeave * set t_ve+=[?17;207;111c  " green
+endif
+if &term == "screen.linux"
+  set t_ve+=[34l
+  au InsertEnter * set t_ve+=[34h[?25h    " cnorm
+  au InsertLeave * set t_ve+=[34l           " cvvis
+  autocmd VimLeave * set t_ve+=[34h[?25h
+  " show 'Vim,filename' as window name for screen (Tip 1126) ... doesn't seem
+  " to be having an effect, but something else (?) is causing a similar thing
+  set titlestring=\%(\%M%)%t(Vim)
+  set t_ts=k
+  set t_fs=\
+endif
+
+if &term == "linux" || &term == "screen.linux"
+    " set Del & BackSpace keys to function properly (is this neccessary?)
+    set t_kb=
+    set t_kD=[3~
+    " use the blink attribute for bright background (console_codes(4)) & the
+    " bold attribute for bright foreground. The redefinition of t_AF is
+    " necessary for bright \"Normal" highlighting to not influence the rest.
+    " http://vim.wikia.com/wiki/Get_bright_background_colors_in_Linux_console
+    if has("terminfo")
+        set t_Co=16
+        set t_AB=[%?%p1%{7}%>%t5%p1%{8}%-%e25%p1%;m[4%dm
+        set t_AF=[%?%p1%{7}%>%t1%p1%{8}%-%e22%p1%;m[3%dm
+    endif
+endif
+
+
+" Expand tabs to 4 spaces, BackSpace treats 4 spaces like 1 tab (Tip#12)
+set et
+set tabstop=4
+set softtabstop=4
+
+" (auto)indent 4 spaces with > , >> , cindent , etc.
+set shiftwidth=4
+
+" allow backspacing over autoindent, line breaks, start of insert
+" while in insert mode
+set backspace=indent,eol,start
+
+" allow cursor to move to the previous/next line
+set ww=b,s,h,l,>,<,[,],~
+
+" Enable use of mouse in terminals
+set mouse=a
+set mousemodel=popup_setpos
+
+" automatically insert current comment leader after <Enter> in Insert mode
+set fo=r
+
+" always set autoindenting on
+set ai
+
+" disable auto-indenting for html and xml files
+autocmd BufEnter *.html setlocal indentexpr=
+autocmd BufEnter *.htm setlocal indentexpr=
+autocmd BufEnter *.xml setlocal indentexpr=
+autocmd BufEnter *.xsd setlocal indentexpr=
+
+if version >= 600
+  filetype plugin indent on
+endif
+
+" do not load matchparen plugin, no auto-highlighting of matching parens
+let loaded_matchparen = 1
+
+" When selecting text in Visual block mode, allow cursor to be positioned 
+" beyond the ends of lines where there are no actual characters.
+set virtualedit=block
+
+set writebackup     " backup before overwriting a file, remove after write
+set nobackup		" don't accumulate backup file
+
+"set backupcopy=yes       " make a copy of the file and overwrite the original one
+"set backupdir=~/.vimback " place backup files in the ~/.vimback directory
+
+"if has("vms")
+  "set nobackup		 " do not keep a backup file, use versions instead
+"else
+  "set backup		 " keep a backup file
+"endif
+
+set ignorecase  " super handy in combo with smartcase !!
+set smartcase   " override 'ignorecase' for search pattern w/ upper case chars
+set incsearch      " do incremental searching
+set history=300	   " keep 300 lines of command line history
+set showcmd        " display incomplete commands
+
+set cmdheight=1    " command line is one screen line tall
+set laststatus=2   " status bar is always visible
+
+" Status line settings
+set stl=%<\ %F%{GitBranch()}%(\ %h%)\ %2*%M%*%(\ (%R)\ %)\ %1*│%*%{len(filter(range(1,bufnr('$')),'buflisted(v:val)'))}\ %=\ %1*<%*%B%1*>%*\ %c,%l\ %3*\ %p%%\ %*
+
+set shortmess=aO
+
+"hi User1 term=inverse,bold cterm=inverse,bold ctermfg=red
+
+set timeout
+"set ttimeout
+"set notimeout
+set timeoutlen=1300
+set ttimeoutlen=100
+
+" enable tab command completion with wildmenu (Tip #1045)
+set wildmenu
+set wildignore=*.dll,*.o,*.pyc,*.bak,*.exe,*.jpg,*.jpeg,*.png,*.gif
+set wildmode=list:longest,full
+set wcm=<C-Z>
+
+
+" ******** Mappings ********
+
+" use backquote key for the leader, hit twice to type backquote character.
+let mapleader = "`"
+imap <leader>` <esc>:set paste<CR>a`<esc>:set nopaste<CR>a
+let maplocalleader = "`"
+
+" clear search highlighting by hitting 'Return' key
+nnoremap <CR> :nohlsearch<CR>/<BS><BS>
+
+" go to command prompt using ; instead of : (avoiding the shift key...)
+noremap ; :
+
+" Use Space & BackSpace keys to scroll window forward & backward one screen
+" while in normal mode
+noremap <space> 
+noremap <BackSpace> 
+
+" while in insert mode, yank word, yank line, delete word, delete line, put
+imap <leader>yw <c-o>yw
+imap <leader>yy <c-o>yy
+imap <leader>dw <c-o>dw
+imap <leader>dd <c-o>dd
+imap <leader>p <c-o>p
+" paste into gvim from other applications
+imap <leader>P <c-o>"+gP
+" map undo and redo commands for insert mode
+imap <leader>u <c-o>u
+imap <leader><c-r> <c-o>
+
+" Go into -- (insert) VISUAL -- mode from insert mode
+imap <leader>v <c-o>v
+
+" Go into -- (insert) VISUAL BLOCK -- mode from insert mode 
+imap <leader><c-v> <c-o>v<c-v>
+map <leader><c-v> v<c-v>
+
+" initiate Omni completion while typing a word (h: compl-omni)
+imap <leader>\ 
+
+" quickfix commands, jump fore & aft when using :helpgrep (aka :helpg)
+map <c-n> :cnext<CR>
+map <c-p> :cprevious<CR>
+
+" View personal tip sheet with less (type v to edit it)
+map <leader>h :silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>
+imap <leader>h <esc>:silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>a
+
+" Map insert-key to toggle between insert & normal modes
+"map! <Insert> <esc>
+"map <Insert> <esc><esc>a
+
+" <F9> toggle paste mode on/off, useful when pasting text into terminal Vim
+set pastetoggle=<F9>        " toggle 'paste' option
+map <F9>        :set invpaste paste?<CR>
+imap <F9>   <C-O>:set invpaste<CR><C-O>/<BS>
+
+" <F10> toggles numbered lines on/off
+nmap <F10> :set nu!<CR>
+imap <F10> <c-o>:set nu!<CR>
+
+" open a window containing all highlight group names, in their own color
+command Hi so $VIMRUNTIME/syntax/hitest.vim
+
+" set lines to be broken after 80, 70, 60 columns, or to be not broken (=0)
+command T8 :set textwidth=80
+command T7 :set textwidth=70
+command T6 :set textwidth=60
+command T0 :set textwidth=0
+
+" HappyHacking Kybd specific mapping: Alt-Return deletes word before cursor,
+" Fn-Return (embedded 'Enter' key) deletes word after cursor.
+" In kmap file, F19 is mapped to 'Alt-Return' & F20 is mapped to 'Enter'.
+set <F19>=[33~
+set <F20>=[34~
+imap <F19> <c-o>db
+map <F19> db
+imap <F20> <c-o>de
+map <F20> de
+
+" The following key-mapping that make use of the - = \ ` keys relate
+" to the Happy Hacking keyboard, where I've re-mapped the embedded
+" cursor keys (Left Down Up Right) into these upper right-most four
+" keys. The F keys are used here to send console terminal keycodes,
+" allowing this to work in terminal versions of Vim (Tip 1272).
+"
+" forward/backward by word mapped to Alt-` , Alt--
+set <F28>=`
+map <F28> <a-`>
+map! <F28> <a-`>
+map <a-`> el
+imap <a-`> el
+set <F25>=-
+map <F25> <a-->
+map! <F25> <a-->
+map <a--> b
+imap <a--> b
+
+" the same for an Apple keyboard, with Right & Left AltGr mapped to
+" Meta_dollar & Meta_asciicircum respectively
+set <F30>=$
+map <F30> <m-$>
+map! <F30> <m-$>
+map <m-$> el
+imap <m-$> el
+set <F31>=^
+map <F31> <m-^>
+map! <F31> <m-^>
+map <m-^> b
+imap <m-^> b
+
+" down/up by screen-line mapped to Alt-= , Alt-\
+set <F26>==
+map <F26> <a-=>
+map! <F26> <a-=>
+map <a-=> gj
+imap <a-=> gj
+set <F27>=\
+map <F27> <a-\>
+map! <F27> <a-\>
+map <a-\> gk
+imap <a-\> gk
+
+" the same for an Apple keyboard, with Up & Down AltGr mapped to
+" Meta_plus & Meta_minus respectively
+set <F32>=+
+map <F32> <m-+>
+map! <F32> <m-+>
+map <m-+> gj
+imap <m-+> gj
+set <F33>=-
+map <F33> <m-->
+map! <F33> <m-->
+map <m--> gk
+imap <m--> gk
+
+" for an Apple keyboard, with Right & Left Alt mapped to
+" Meta_parenright & Meta_parenleft respectively
+set <F34>=)
+map <F34> <m-)>
+map! <F34> <m-)>
+map <m-)> )
+imap <m-)> )
+set <F35>=(
+map <F35> <m-(>
+map! <F35> <m-(>
+map <m-(> (
+imap <m-(> (
+
+
+" decrease / increase window height: Alt-j / Alt-k
+set <F22>=j
+map <F22> <a-j>
+map! <F22> <a-j>
+map <a-j> <c-w>-
+imap <a-j> <esc><c-w>-a
+set <F23>=k
+map <F23> <a-k>
+map! <F23> <a-k>
+map <a-k> <c-w>+
+imap <a-k> <esc><c-w>+a
+" decrease / increase window width: Alt-h / Alt-l
+set <F21>=h
+map <F21> <a-h>
+map! <F21> <a-h>
+map <a-h> <c-w><
+imap <a-h> <esc><c-w><a
+set <F24>=l
+map <F24> <a-l>
+map! <F24> <a-l>
+map <a-l> <c-w>>
+imap <a-l> <esc><c-w>>a
+
+" Used with a keymap setting F15=Ctrl-Space, F16=Ctrl-BackSpace, F17=Alt-Space
+" and F18=Alt-BackSpace; these key combinations will scroll to the first line of
+" the file, the last line of the file, forward one line, backward one line.
+set <F15>=[28~
+set <F16>=[29~
+set <F17>=[31~
+set <F18>=[32~
+map <F15>   G
+imap <F15>  G
+map <F16>   1G
+imap <F16>  1G
+map <F17>   
+imap <F17>  
+map <F18>   
+imap <F18>  
+
+" reformat paragraph; filter through par. regarding par not handling unicode
+" see tip584, or http://vim.wikia.com/wiki/Awesome_text_formatter#Unicode
+"
+" reformat paragraph; break at default 80 columns, leaving first line of 
+" paragraph flush left (for bullet or numbered list) but indent all other 
+" lines in paragraph 2 spaces:
+noremap <leader>q2 {v}!par -w s0rT4p2dh1 <CR>}lz.
+noremap! <leader>q2 <esc>{v}!par -w s0rT4p2dh1<CR>}lz.i
+vmap <leader>q2 !par -w s0rT4p2dh1<CR>}
+" ... 3 spaces:
+noremap <leader>q3 {v}!par -w s0rT4p3dh1<CR>}lz.
+noremap! <leader>q3 <esc>{v}!par -w s0rT4p3dh1<CR>}lz.i
+vmap <leader>q3 !par -w s0rT4p3dh1<CR>}
+" ... 4 spaces:
+noremap <leader>q4 {v}!par -w s0rT4p4dh1<CR>}lz.
+noremap! <leader>q4 <esc>{v}!par -w s0rT4p4dh1<CR>}lz.i
+vmap <leader>q4 !par -w s0rT4p4dh1<CR>}
+" ... 5 spaces:
+noremap <leader>q5 {v}!par -w s0rT4p5dh1<CR>}lz.
+noremap! <leader>q5 <esc>{v}!par -w s0rT4p5dh1<CR>}lz.i
+vmap <leader>q5 !par -w s0rT4p5dh1<CR>}
+"
+" reformat paragraph; break at default 80 columns -- keep text
+" centered vertically on the screen
+"noremap <leader>ww {v}!par -w s0rT4<CR>}lz.
+"noremap! <leader>ww <esc>{v}!par -w s0rT4<CR>}lz.i
+"vmap <leader>ww !par -w s0rT4<CR>}
+
+" reformat paragraph; break at default 80 columns
+noremap <leader>q8 {v}!par -w s0rT4<CR>}l
+noremap! <leader>q8 <esc>{v}!par -w s0rT4<CR>}li
+vmap <leader>q8 !par -w s0rT4<CR>}
+" reformat paragraph; break at 70 columns
+noremap <leader>qq {v}!par -w70 s0rT4<CR>}l
+noremap! <leader>qq <esc>{v}!par -w70 s0rT4<CR>}li
+vmap <leader>qq !par -w70 s0rT4<CR>}
+
+" reformat paragraph; break at 74 columns
+noremap <leader>qw {v}!par -w74 s0rT4<CR>}l
+noremap! <leader>qw <esc>{v}!par -w74 s0rT4<CR>}li
+vmap <leader>qw !par -w74 s0rT4<CR>}
+
+" reformat paragraph; break at 60 columns
+noremap <leader>q6 {v}!par -w62 s0rT4<CR>}l
+noremap! <leader>q6 <esc>{v}!par -w62 s0rT4<CR>}li
+vmap <leader>q6 !par -w62 s0rT4<CR>}
+"
+" filter entire file through par; default = 80 columns
+nmap <leader>qgg :% !par -w s0rT4<CR>
+imap <leader>qgg <esc>:% !par -w s0rT4<CR>
+" filter entire file through par; break at 70 columns
+nmap <leader>qg7 :% !par -w70 s0rT4<CR>
+imap <leader>qg7 <esc>:% !par -w70 s0rT4<CR>
+" filter entire file through par; break at 62 columns
+nmap <leader>qg6 :% !par -w62 s0rT4<CR>
+imap <leader>qg6 <esc>:% !par -w62 s0rT4<CR>
+"
+" filter through par, you supply the arguments (<leader>q<space>)
+nmap <leader>q  {!}par 
+imap <leader>q  <Esc>{!}par 
+vmap <leader>q  !par 
+
+" reload vimrc file without having to quit & re-start
+map <leader>rc <esc>:source ~/.vimrc<CR>
+map! <leader>rc <esc>:source ~/.vimrc<CR>a
+"map <leader>rc <esc>:so C:\Program Files\Vim\_vimrc<CR> " (ms)
+"map! <leader>rc <esc>:so C:\Program Files\Vim\_vimrc<CR>a
+
+" VimCommander, a two-panel file-manager for vim
+"noremap <silent> <F5> :cal VimCommanderToggle()<CR>
+
+
+" -------- Tabs --------
+" Not using tabs as much as I used to...need to reevaluate this section.
+
+set showtabline=1
+
+" go to previous tab / next tab
+map <leader>[ :tabprevious<CR>
+imap <leader>[ <C-O>:tabprevious<CR>
+map <leader>] :tabnext<CR>
+imap <leader>] <C-O>:tabnext<CR>
+
+" open a new tab page with an empty window & then prompt for a file to open
+map <leader>tt :tabe 
+imap <leader>tt <C-O>:tabe 
+
+" go to next tab / previous tab (F11 & F12 mapped to Fn-Tab & Fn-Esc
+" in Happy Hacking Keyboard via kmap file)
+set <F11>=[23~
+set <F12>=[24~
+map <F11> :tabnext<CR>
+imap <F11> <esc>:tabnext<CR>a
+map <F12> :tabprevious<CR>
+imap <F12> <esc>:tabprevious<CR>a
+
+" close tab & delete buffer without closing window
+nmap <leader>t- :bn<CR>:bw#<CR>:tabclose<CR>
+
+
+
+" delete buffer without closing window
+"nmap <leader>b- :bn<CR>:bw#<CR>
+
+" close window without deleting buffer
+nmap <leader>w- :close<CR>
+
+" Zoom into and out of a window (ZoomWin plugin):
+nmap <leader>z :ZoomWin<CR>
+
+" automatically change current directory when switching buffers
+au BufEnter,BufFilePost * if expand("<afile>") !~ "://" | lcd %:p:h | endif
+
+" switch between buffers without each one having to be saved first
+set hidden 
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" " go to next buffer / previous buffer (F11 & F12 mapped to Fn-Tab & Fn-Esc "
+" " in Happy Hacking Keyboard via kmap file)                                 "
+" set <F11>=[23~                                                           "
+" set <F12>=[24~                                                           "
+" map <F11> :bnext!<CR>                                                      "
+" imap <F11> <esc>:bnext!<CR>a                                               "
+" map <F12> :bprevious!<CR>                                                  "
+" imap <F12> <esc>:bprevious!<CR>a                                           "
+"                                                                            "
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" settings for bufferlist.vim (nice buffer list that slides in from the left
+" http://www.vim.org/scripts/script.php?script_id=1325
+map! <leader>b <esc>:echo Buftabs_show()<CR>:call BufferList()<CR>
+map <leader>b :echo Buftabs_show()<CR>:call BufferList()<CR>
+let g:BufferListWidth = 28
+let g:BufferListMaxWidth = 65
+hi BufferSelected term=NONE ctermfg=grey ctermbg=darkgrey cterm=bold
+hi BufferNormal term=NONE ctermfg=darkyellow ctermbg=black cterm=NONE
+
+map <leader>B :VSBufExplorer<CR>
+map! <leader>B :VSBufExplorer<CR>
+
+" settings for buftabs
+let g:buftabs_only_basename=1
+
+" list buffers, prompt for a selection. Leaving buftabs displayed
+map <leader><CR> :echo Buftabs_show() <CR>:buffers<CR>:buffer <C-Z><C-Z>
+"map <leader><CR> :buffers<CR>:buffer<Space>
+map! <leader><CR> <esc>:buffers<CR>:buffer <C-Z><C-Z>
+
+
+" go to next buffer / previous buffer
+map <F2> :bn<CR>
+map! <F2> <esc>:bn<CR>
+map <F1> :bp<CR>
+map! <F1> <esc>:bp<CR>
+
+" Toggle status line on & off
+"map <leader><space> :set laststatus=0<cr>
+"imap <leader><space> <esc>:set laststatus=0<cr>
+"map <leader><BackSpace> :set laststatus=2<cr>
+"imap <leader><BackSpace> <esc>:set laststatus=2<cr>
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" map <leader><space> :set laststatus=0<cr>:CMiniBufExplorer<cr><cr>        "
+" imap <leader><space> <esc>:set laststatus=0<cr>:CMiniBufExplorer<cr>a     "
+" map <leader><BackSpace> :set laststatus=2<cr>:TMiniBufExplorer<cr><cr>    "
+" imap <leader><BackSpace> <esc>:set laststatus=2<cr>:TMiniBufExplorer<cr>a "
+"                                                                           "
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+map <leader><BackSpace> <c-o>
+imap <leader><BackSpace> <c-o>
+
+
+" go to previous window / next window (see :h Ctrl-w_w)
+map <leader><tab> <C-w>w
+imap <leader><tab> <esc><C-w>wa
+map <leader><esc> <C-w>W
+imap <leader><esc> <esc><C-w>Wa
+
+
+" F8 update (save) file (update only writes when buffer has been modified)
+map! <F8> <esc>:update<CR>a
+map  <F8> <esc>:update<CR>
+" Alt-s update file
+set <F29>=s
+map <F29> <a-s>
+map! <F29> <a-s>
+map! <a-s> <esc>:update<CR>a
+map  <a-s> <esc>:update<CR>
+
+" get unicode info for byte under cursor using the external 'unicode' command,
+" more detailed than the default g8 (output of which is already in statusline)
+map g8 :normal! vy<cr><cr>:!unicode \"<cr>
+
+" Remove trailing whitespace at the ends of lines, or maybe:  %s/\s\+$//e
+command Rws %s/\s*$//
+
+" remove spaces between quote markers (> >) in emails
+command Rqs :%s/>\s\+>/>>/g
+
+" remove m$ ^M line endings (tip#26)
+"command Ms :%s/\r/\r/g
+command Ms :%s/\r//g
+
+" replace the DOS style CR/LF line endings
+command Mm :%s///g
+
+" convert hex ascii codes to printable characters, ie 
+" Hello%20World.%20%20Good%2c%20bye. --> Hello World.  Good, bye.
+"for the whole file:
+command Hac :%s/%\(\x\x\)/\=nr2char('0x'.submatch(1))/g  
+"for the visually selected text:
+vmap hac :s/%\(\x\x\)/\=nr2char('0x'.submatch(1))/g
+
+" Set filetype to txt
+command Txt :set filetype=txt
+
+" Set (or unset) all open windows to scroll together
+command Scroll :windo setlocal scrollbind
+command Scrollno :windo setlocal noscrollbind
+
+" write in insert mode, surrounded by markup characters (stx2any formatting)
+inoremap <leader>' ''''<esc>hi
+imap <leader>8 **<esc>i
+" imap <leader> __<esc>i
+imap <leader>/ //<esc>i
+inoremap <leader>{ {{{<CR><CR>}}}<esc>ki
+" move beyond markup characters and continue writing
+"imap <leader><space> <esc>Ea<space>
+
+
+" reStructuredText tools
+" ----------------------
+" mark visually selected text as a link
+"vnoremap <leader>ru y gv <Esc>`>a<CR><Esc>`<i<CR><Esc>I`<esc>g_a`_<esc>kJJG()i<esc>p0i.. _<c-o>$:
+"vnoremap <leader>ru y gv<Esc>`>a<CR><Esc>`<i<CR><Esc>I<esc>g_a_<esc>kJJG()i<esc>p0i.. _<c-o>$: 
+"inoremap <leader>ru <esc>bvey gv <Esc>`>a<CR><Esc>`<i<CR><Esc>I<esc>g_a_<esc>kJJG()i<esc>p0i.. _<c-o>$: 
+
+
+" map <leader>r- yypv$r-o<esc>o
+" map! <leader>r- <esc>yypv$r-o<esc>o
+" map <leader>r= yypv$r=o<esc>o
+" map! <leader>r= <esc>yypv$r=o<esc>o
+" map <leader>r' yypv$r'o<esc>o
+" map! <leader>r' <esc>yypv$r'o<esc>o
+" map <leader>r` yypv$r`o<esc>o
+" map! <leader>r` <esc>yypv$r`o<esc>o
+" map <leader>r. yypv$r.o<esc>o
+" map! <leader>r. <esc>yypv$r.o<esc>o
+" map <leader>r~ yypv$r~o<esc>o
+" map! <leader>r~ <esc>yypv$r~o<esc>o
+" map <leader>r+ yypv$r+o<esc>o
+" map! <leader>r+ <esc>yypv$r+o<esc>o
+
+
+" replace curly quotes with straight quotes
+cmap <leader>" % s/[“”]/"/g<cr>
+cmap <leader>' % s/[‘’]/'/g<cr>
+
+" replace all EM (U+2014) and EN (U+2013) dashes in file with two dashes
+cmap <leader>- % s/[–—―Ñ]/--/g<cr>
+" replace EM and EN dashes in file with two dashes, a space on either side
+cmap <leader>_ % s/[–—―Ñ]/ -- /g<cr>
+
+" replace all ellipsises (U+2026) with three decimals
+cmap <leader>. % s/[…É]/.../g<cr>
+
+" replace bullet characters (U+2022) with *
+cmap <leader>8 %s/[•·]/*/g<cr>
+
+" replace box drawing characters with ascii characters - + |
+"cmap <leader>\ % s/[┘┐┼┌└]/+/g<cr>:%s/─/-/g<cr>:%s/│/\|/g<cr>
+
+cmap <leader>+ % s/[┛┓┏┗]/+/g<cr>:%s/[━┯┷]/-/g<cr>:%s/[┃┠┨]/\|/g<cr>
+" replace box drawings character "heavy horizontal" (U+2501) with =
+cmap <leader>= %s/━/=/g<cr>
+
+" replace control characters in html files (for curly quotes, etc.) with ascii
+cmap <leader>,- % s/[]/--/g<cr>
+cmap <leader>,_ % s/[]/ -- /g<cr>
+cmap <leader>,' % s/[]/'/g<cr>
+cmap <leader>," % s/[]/"/g<cr>
+cmap <leader>,. % s//.../g<cr>
+
+"these next two don't work...they quit & not continue if something isn't found
+" replace all the above; curly quotes, EM & EN dashes, ellipses
+"cmap <leader>a :%s/[“”]/"/g<cr> \|:%s/[‘’]/'/g<cr> \|:%s/[—–Ð]/--/g<cr> \|:%s/…/.../g<cr>
+cmap <leader>A :%s/[“”]/"/g<cr>:%s/[‘’]/'/g<cr>:%s/[—–Ð]/ -- /g<cr>:%s/…/.../g<cr>
+" replace Õ Ò Ó Ê ¥ with ascii punctuation (that 
+cmap <leader>o :%s/[ÕÔ]/'/g<cr>:%s/[ÒÓ]/"/g<cr>:%s/¥/*/g<cr>:%s/Ê//g<cr>:%s/	//g<cr>
+cmap <leader>Y %s/^¥¥*/*/g<cr>
+
+" Write to a given directory with a file-name of:
+" <visuallyselectedtext>.txt (vmap), or type in the filename (map).
+vmap <leader>wf y :w ~/fields/<c-r>".txt
+nmap <leader>wf :w ~/fields/.txt<left><left><left><left>
+vmap <leader>wc y :w ~/comp/<c-r>".txt
+nmap <leader>wc :w ~/comp/.txt<left><left><left><left>
+vmap <leader>wl y :w ~/library/<c-r>".txt
+nmap <leader>wl :w ~/library/.txt<left><left><left><left>
+
+" uppercase first letter of sentences in a file
+command Cs %s/[.!?]\_s\+\a/\U&\E/g
+" uppercase first letter of sentences in visually selected text
+vmap cs :s/[.!?]\_s\+\a/\U&\E/g<CR>
+" Title case visually selected text
+vmap ct :s/\<\(.\)\(\k*\)\>/\u\1\L\2/g<CR>
+
+" process with wcalc -- position cursor immediately (or some number of spaces)
+" after the end of the formula in insert mode, <leader>= will output solution
+" in scientific notation:
+"inoremap <leader>= <Esc>Bi<CR><Esc>:co-<CR>j!!wcalc<CR>-$Jk$J$a<space>
+" or with 1021 digits after the decimal point:
+"inoremap <leader>+ <Esc>Bi<CR><Esc>:co-<CR>j!!wcalc -P1021<CR>-$Jk$J$a<space>
+
+""""""""""""""""""
+" DICTIONARIES
+
+" filter word under cursor through dict, view definition(s)
+map <leader>di be:!def <cWORD><CR>
+" filter word before cursor through dict, read definition(s) into file
+imap <leader>di <Esc>b:r !def <cWORD><CR>a
+
+" filter word under cursor, view definition(s) [english to spanish]
+map <leader>de be:!sdef -e <cWORD><CR>
+" filter word before cursor, read definition(s) into file
+imap <leader>de <Esc>b:r !sdef -e <cWORD><CR>a
+" filter word under cursor, view definition(s) [spanish to english]
+map <leader>ds be:!sdef -s <cWORD><CR>
+" filter word before cursor, read definition(s) into file
+imap <leader>ds <Esc>b:r !sdef -s <cWORD><CR>a
+
+" filter word under cursor through the i2e dictionary [english to spanish]
+map <leader>de2 be:!i2e-cli -e <cWORD><CR>
+map <leader>dE2 be:!i2e-cli <cWORD><CR>
+" filter word before cursor through i2e, read definition(s) into file
+imap <leader>de2 <Esc>b:r !i2e-cli -e <cWORD><CR>a
+imap <leader>dE2 <Esc>b:r !i2e-cli <cWORD><CR>a
+" filter word under cursor through the i2e dictionary [spanish to english]
+map <leader>ds2 be:!i2e-cli -re <cWORD><CR>
+map <leader>dS2 be:!i2e-cli -r <cWORD><CR>
+" filter word before cursor through i2e, read definition(s) into file
+imap <leader>ds2 <Esc>b:r !i2e-cli -re <cWORD><CR>a
+imap <leader>dS2 <Esc>b:r !i2e-cli -r <cWORD><CR>a
+
+" filter word under cursor through the 'words' latin/english dictionary
+" using the wrapper script 'latin'.   English/Latin:
+map <leader>del be:!latin -e <cWORD><CR>
+imap <leader>del <Esc>b:r !latin -e <cWORD><CR>a
+" Latin/English:
+map <leader>dle be:!latin <cWORD><CR>
+imap <leader>dle <Esc>b:r !latin <cWORD><CR>a
+
+" start English spell checking
+map  <F5> :setlocal spell spelllang=en_us<CR>
+imap <F5> <esc>:setlocal spell spelllang=en_us<CR>a
+" start Spanish Spell-checking
+imap <F6> <esc>:setlocal spell spelllang=es<CR>a
+map  <F6> :setlocal spell spelllang=es<CR>
+" stop spell checking
+map  <F4> :setlocal nospell<CR>
+imap <F4> <esc>:setlocal nospell<CR>a
+
+" filter through the 'boxes' program, surround blocks of text with a box
+" of text, useful for adding commenting to blocks of code
+vmap <leader>x3 !boxes -d pound-cmt<CR>
+nmap <leader>x3 !!boxes -d pound-cmt<CR>
+vmap <leader>x# !boxes -d shell<CR>
+nmap <leader>x# !!boxes -d shell<CR>
+vmap <leader>x' !boxes -d vim-cmt<CR>
+nmap <leader>x' !!boxes -d vim-cmt<CR>
+vmap <leader>x" !boxes -d vim-shell<CR>
+nmap <leader>x" !!boxes -d vim-shell<CR>
+vmap <leader>x8 !boxes -d simple<CR>
+nmap <leader>x8 !!boxes -d simple<CR>
+vmap <leader>x- !boxes -d stone<CR>
+nmap <leader>x- !!boxes -d stone<CR>
+vmap <leader>x= !boxes -d equals<CR>
+nmap <leader>x= !!boxes -d equals<CR>
+vmap <leader>xu  !boxes -r<CR>
+nmap <leader>xu  !!boxes -r<CR>
+
+" Stop NERDcommenter from script from echoing 'Unknown filetype' messages
+let NERDShutUp=1
+" view NERDCommenter help
+command Nerd :help NERDCommenter
+
+ "ctheme tool -- save file, load theme, view colors
+" Find a new mapping for this...
+"map <leader>' :w<CR>:!/usr/bin/ctheme %<CR>:!colordisplay<CR>
+"imap <leader>' <Esc>:w<CR>:!/usr/bin/ctheme %<CR>:!colordisplay<CR>
+
+" use the txp script to print a letter-style output...
+command Let !txp -f11 -l72 -F0 %
+" ...or regular output
+command Txp !txp %
+
+" ConTeX source files - save file, generate PDF, delete temporary files,
+" preview pdf in TeXniscope
+"
+map  <leader>df <esc>k:w<CR>:silent !texexec --pdf %:p<CR>:silent !texutil --purge %<<CR>:silent !open -a /Applications/TeXniscope.app %<".pdf"<CR>kk<c-l>
+map! <leader>df <esc>k:w<CR>:silent !texexec --pdf %:p<CR>:silent !texutil --purge %<<CR>:silent !open -a /Applications/TeXniscope.app %<".pdf"<CR>kk<c-l>a
+
+map <leader>dgv <esc>k:w<CR>:silent !texexec --pdf %:p<CR>:silent !texutil --purge %<<CR>:silent !gv %<".pdf"<CR>kk<c-l>
+map! <leader>dgv <esc>k:w<CR>:silent !texexec --pdf %:p<CR>:silent !texutil --purge %<<CR>:silent !gv %<".pdf"<CR>kk<c-l>a
+
+map <leader>dvi <esc>k:w<CR>:silent !texexec %:p<CR>:silent !xdvi %<".dvi"<CR>kk<c-l>
+map! <leader>dvi <esc>k:w<CR>:silent !texexec %:p<CR>:silent !xdvi %<".dvi"<CR>kk<c-l>a
+" map <leader>dvt <esc>k:w<CR>:silent !texexec %:p >/dev/null<CR>:silent !xdvi %<".dvi"<CR>kk<c-l>
+
+" generate CSS XHTML when using the :TOhtml command
+let html_use_css = 1
+let use_xhtml = 1
+
+" Browse to URL under the cursor with a given browser:
+" w3m (Linux)
+map <leader>w3 :update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>
+imap <leader>w3 <esc>:update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>a
+" elinks (Linux)
+map <leader>we :update<CR>:silent !screen -t 'elinks' elinks '<cWORD>'<CR>
+imap <leader>we <esc>:update<CR>:silent !screen -t 'elinks' elinks '<cWORD>'<CR>a
+
+" opera (Linux)
+map <leader>wo :update<CR>:!opera '<cWORD>'<CR>
+imap <leader>wo <esc>:update<CR>:!opera '<cWORD>'<CR>a
+" FireFox (Linux)
+map <leader>wf :update<CR>:!firefox '<cWORD>'<CR>
+imap <leader>wf <esc>:update<CR>:!firefox '<cWORD>'<CR>a
+
+" open webpage in another buffer using the browser.vim plugin
+map <leader>wv :WebBrowser <c-r><c-a><CR>
+imap <leader>wv :WebBrowser <c-r><c-a><CR>
+
+" Browse using the browser.vim plugin, starts the command:
+map <leader>ww :WebBrowser 
+
+
+" play a stream (.pls url for example) with mplayer
+"map <leader>bm :update<CR>:!screen -t mplay screen_mplay '<cWORD>'<CR>
+"imap <leader>bm <esc>:update<CR>:!screen -t mplay screen_mplay '<cWORD>'<CR>a
+
+" Open current HTML file in given browser (Tip#684):
+" w3m (Linux)
+map  <leader>ow :!w3m "%"<CR><Enter>
+imap <leader>ow <esc>:!w3m "%"<CR><Enter>a
+" links (Linux)
+map  <leader>oe :!elinks "%"<CR><Enter>
+imap <leader>oe <esc>:!elinks "%"<CR><Enter>a
+" Opera (Linux+X)
+map  <leader>oo :!open -a opera "%"<CR><Enter>
+imap <leader>oo <esc>:!open -a opera "%"<CR><Enter>a
+" Dillo (Linux+X)
+map  <leader>od :!open -a dillo "%"<CR><Enter>
+imap <leader>od <esc>:!open -a dillo "%"<CR><Enter>a
+" Firefox (Linux+X)
+map  <leader>of :!open -a firefox "%"<CR><Enter>
+imap <leader>of <esc>:!open -a firefox "%"<CR><Enter>a
+" Camino (Mac)
+map  <leader>oc :!open -a /Applications/Camino.app "%"<CR><Enter>
+imap <leader>oc <esc>:!open -a /Applications/Camino.app "%"<CR><Enter>a
+" Safari (Mac)
+map  <leader>os :!open -a /Applications/Safari.app "%"<CR><Enter>
+imap <leader>os <esc>:!open -a /Applications/Safari.app "%"<CR><Enter>a
+" Firefox (Mac)
+"map  <leader>bf :!open -a /Applications/Firefox.app "%"<CR><Enter>
+"imap <leader>bf <esc>:!open -a /Applications/Firefox.app "%"<CR><Enter>a
+
+" trying to get this to work with the youtube script I wrote, but having
+" problems with filename expansion...
+map <leader>U :!echo '<cWORD>'<CR>
+
+"******** ABBREVIATIONS ********
+" year/month/date/day/time/zone abbreviation
+" Linux
+iab ydt <c-r>=strftime("%Y/%m/%d\ %a\ %k:%M\ %Z")<cr>
+" msWindows
+"iab ydt <c-r>=strftime("%Y/%m/%d\ %a\ %I:%M\ %z")<cr>
+
+" stamp a document retrieved from the net with date & time accessed
+iab acc [accessed <c-r>=strftime("%Y/%m/%d\ %a\ %k:%M\ %Z")<cr>]
+
+iab <l <leader <left>>
+iab +/- ±
+
+
+"******** PLUGINS ********
+"
+" Height of Mini Buffer Explorer window increases to accommodate buffer tabs
+" (minbufexpl.vim plugin)
+" let g:miniBufExplMaxSize = 0
+
+" screenpaste.vim pastes/inserts current GNU Screen buffer
+" change default mappings
+map  <Leader>sp  <Plug>ScreenpastePut
+map! <Leader>sp  <Plug>ScreenpastePut
+map  <Leader>sgp <Plug>ScreenpasteGPut
+nmap <Leader>sP  <Plug>ScreenpastePutBefore
+nmap <Leader>sgP <Plug>ScreenpasteGPutBefore
+
+
+" closetag -- set unaryTagsStack to its default value for html
+let b:closetag_html_style=1
+" auto source closetag plugin for given filetypes
+au Filetype html,xml,xsl source ~/.vim/plugin/closetag.vim
+
+" settings for the MRU (Most Recently Used files) plugin
+"let MRU_File = '~/.vim/vim_mru_files'
+let MRU_Max_Entries = 200
+let MRU_Window_Height = 15
+command Mr :MRU
+
+" VtreeExplorer settings
+let treeExplNoList = 1      " don't list VtreeExplorer in buffer list
+let treeExplDirSort = 1     " sort directories first
+let treeExplVertical = 1    " split vertically
+let treeExplWinSize = 32    " make vertical split 32 columns wide
+let treeExplCloseExp = 1    " close VtreeExplorer after use
+"open VtreeExplorer
+map <leader>f :echo Buftabs_show()<CR>:VSTreeExplore<CR>
+map! <leader>f <esc>:VSTreeExplore<CR>
+" open VtreeExplorer & leave the explorer open
+map <leader>F :let treeExplCloseExp=0<CR>:echo Buftabs_show()<CR>:VSTreeExplore<CR>
+map! <leader>F <esc>:VSTreeExplore<CR>
+command Vt :VTreeExplore
+
+"Open NERD tree file explorer. Close after opening file:
+"map <leader>f :let NERDTreeQuitOnOpen=1<CR>:NERDTree<CR>
+"map! <leader>f :let NERDTreeQuitOnOpen=1<CR>:NERDTree<CR>
+"Leave NERD tree window open after opening file:
+"map <leader>F :let NERDTreeQuitOnOpen=0<CR>:NERDTree<CR>
+"map! <leader>F :let NERDTreeQuitOnOpen=0<CR>:NERDTree<CR>
+
+
+" read Ms-Word documents, requires 'antiword' (tip#305)
+autocmd BufReadPre *.doc set ro
+autocmd BufReadPre *.doc set hlsearch!
+autocmd BufReadPost *.doc %!antiword "%"
+
+" read RTF documents, requires 'UnRTF'
+autocmd BufReadPre *.rtf set ro
+autocmd BufReadPre *.rtf set hlsearch!
+autocmd BufReadPost *.rtf %!unrtf --text "%"
+
+" SynMark plugin
+":vmap <F_> :SynMark Emph<CR>
+
+
+
+" Remember cursor position after quiting (Tip#80). From Bram: When editing a
+" file, always jump to the last known cursor position. Don't do it when the
+" position is invalid or when inside an event handler (happens when dropping
+" a file on gvim). DF: Also do not do this if the file resides in the $TEMP
+" directory, chances are it is a different file with the same name.
+" This comes from the $VIMRUNTIME/vimrc_example.vim file
+" autocmd BufReadPost *
+" \ if expand("<afile>:p:h") !=? $TEMP |
+" \   if line("'\"") > 0 && line("'\"") <= line("$") |
+" \     exe "normal g`\"" |
+" \     let b:doopenfold = 1 |
+" \   endif |
+" \ endif
+" " Need to postpone using "zv" until after reading the modelines.
+" autocmd BufWinEnter *
+" \ if exists("b:doopenfold") |
+" \   unlet b:doopenfold |
+" \   exe "normal zv" |
+" \ endif
+"
+
+" when we reload, tell vim to restore the cursor to the saved position
+" http://vim.wikia.com/wiki/VimTip80
+augroup JumpCursorOnEdit
+ au!
+ autocmd BufReadPost *
+ \ if expand("<afile>:p:h") !=? $TEMP |
+ \ if line("'\"") > 1 && line("'\"") <= line("$") |
+ \ let JumpCursorOnEdit_foo = line("'\"") |
+ \ let b:doopenfold = 1 |
+ \ if (foldlevel(JumpCursorOnEdit_foo) > foldlevel(JumpCursorOnEdit_foo - 1)) |
+ \ let JumpCursorOnEdit_foo = JumpCursorOnEdit_foo - 1 |
+ \ let b:doopenfold = 2 |
+ \ endif |
+ \ exe JumpCursorOnEdit_foo |
+ \ endif |
+ \ endif
+ " Need to postpone using "zv" until after reading the modelines.
+ autocmd BufWinEnter *
+ \ if exists("b:doopenfold") |
+ \ exe "normal zv" |
+ \ if(b:doopenfold > 1) |
+ \ exe "+".1 |
+ \ endif |
+ \ unlet b:doopenfold |
+ \ endif
+augroup END
+
+
+
+
+
+
+" remember folds after quitting
+autocmd BufWinLeave *.* mkview
+autocmd BufWinEnter *.* silent loadview
+
+" deactivate scrollbind whenever entering one window, re-activate it when
+" entering the other -- drchip via vim-list. To use, :call Scd()
+fun! Scd()
+ augroup SCBNOSCB
+   au!
+   au WinEnter * if winnr() == 1|set scb|endif
+   au WinEnter * if winnr() == 2|set scb|endif
+   au WinLeave * if winnr() == 1|set noscb|endif
+  augroup END
+  norm! zR
+  wincmd l
+  norm! zR
+  wincmd h
+endfun
+
+

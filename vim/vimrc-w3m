@@ -1,0 +1,21 @@
+" This vimrc file is called by w3m when saving html files as text.
+" In w3m's options, set "Editor" to "vim -u ~/.vimrc-w3m", and vim 
+" will make the following substitutions, filter with par to create
+" line-breaks at 80 collumns, and delete the temp file in the 
+" ~/.w3m/ directory. Then, use the :write command to save the text 
+" file in a location of your choosing. Or use mappings like so:
+"   vmap <leader>wf y :w ~/fields/<c-r>".txt
+"   nmap <leader>wf :w ~/fields/.txt<left><left><left><left>
+"
+source ~/.vimrc
+
+autocmd BufReadPost * %s/•/*/g
+autocmd BufReadPost * %s/[“”]/"/g
+autocmd BufReadPost * %s/[‘’]/'/g
+autocmd BufReadPost * %s/[—–]/--/g
+autocmd BufReadPost * %s/…/.../g
+
+autocmd BufReadPost * %!par -w
+
+autocmd BufReadPost * !rm "%"
+

@@ -1,11 +1,11 @@
-"********************************************************************
-" Filename: $HOME/.vimrc
-" Purpose:  configuration file for the vim text editor
-" Authors:  John Magolske + vimrc bits & tips from numerous sources
+"-----------------------------------------------------------------------
+" File:     vimrc - a configuration file for the vim text editor
+" By:       John Magolske @ http://b79.net/contact
 " License:  GPL v3
-" Location: http://B79.net/vim/vimrc.txt
-" Revision: 2010/01/30 Sat 22:24 PST 
-"********************************************************************
+" Notes:    includes bits & tips from numerous sources ...
+"-----------------------------------------------------------------------
+
+" ---- General Settings ------------------------------------------------
 
 " Use Vim rather then Vi settings (must be first; changes other options)
 set nocompatible
@@ -14,6 +14,28 @@ set runtimepath=~/.vim,$VIMRUNTIME
 
 "let &termencoding = &encoding
 "set encoding=utf-8
+
+"set writebackup     " backup before overwriting a file, remove after write
+set nobackup		" don't accumulate backup file
+
+set backupcopy=yes       " make a copy of the file and overwrite the original one
+set backupdir=~/.vimback " place backup files in the ~/.vimback directory
+
+"if has("vms")
+  "set nobackup		 " do not keep a backup file, use versions instead
+"else
+  "set backup		 " keep a backup file
+"endif
+
+" Enable use of mouse in terminals
+set mouse=a
+set mousemodel=popup_setpos
+
+" generate CSS XHTML when using the :TOhtml command
+let html_use_css = 1
+let use_xhtml = 1
+
+set history=300	   " keep 300 lines of command line history
 
 
 " ---- Appearance ------------------------------------------------------
@@ -73,8 +95,8 @@ if &term == "screen.linux"
   au InsertEnter * set t_ve+=[34h[?25h    " cnorm
   au InsertLeave * set t_ve+=[34l           " cvvis
   autocmd VimLeave * set t_ve+=[34h[?25h
-  " show 'Vim,filename' as window name for screen (Tip 1126)
-  set titlestring=\%(\%M%)v`%t
+  " show 'V:filename' as window name for screen (Tip 1126)
+  set titlestring=\%(\%M%)V:%t
   set t_ts=k
   set t_fs=\
 endif
@@ -104,22 +126,10 @@ set shortmess=aO
 
 "hi User1 term=inverse,bold cterm=inverse,bold ctermfg=red
 
-set ignorecase     " super handy in combo with smartcase!
-set smartcase      " override 'ignorecase' for search pattern w/ upper case chars
-set incsearch      " do incremental searching
 set showcmd        " display incomplete commands
 
-" enable tab command completion with wildmenu (Tip #1045)
-set wildmenu
-set wildignore=*.dll,*.o,*.pyc,*.bak,*.exe,*.jpg,*.jpeg,*.png,*.gif
-set wildmode=list:longest,full
-set wcm=<C-Z>
 
-" do not load matchparen plugin, no auto-highlighting of matching parens
-let loaded_matchparen = 1
-
-
-" ---- Movement & Placement of Text ------------------------------------
+" ---- Movement, Behaviour of Text -------------------------------------
 
 " Expand tabs to 4 spaces, BackSpace treats 4 spaces like 1 tab (Tip#12)
 set et
@@ -136,9 +146,18 @@ set backspace=indent,eol,start
 " allow cursor to move to the previous/next line
 set ww=b,s,h,l,>,<,[,],~
 
-" Enable use of mouse in terminals
-set mouse=a
-set mousemodel=popup_setpos
+set ignorecase     " super handy in combo with smartcase!
+set smartcase      " override 'ignorecase' for search pattern w/ upper case chars
+set incsearch      " do incremental searching
+
+" enable tab command completion with wildmenu (Tip #1045)
+set wildmenu
+set wildignore=*.dll,*.o,*.pyc,*.bak,*.exe,*.jpg,*.jpeg,*.png,*.gif
+set wildmode=list:longest,full
+set wcm=<C-Z>
+
+" do not load matchparen plugin, no auto-highlighting of matching parens
+let loaded_matchparen = 1
 
 " automatically insert current comment leader after <Enter> in Insert mode
 set fo=r
@@ -160,29 +179,11 @@ endif
 " beyond the ends of lines where there are no actual characters.
 set virtualedit=block
 
-set writebackup     " backup before overwriting a file, remove after write
-set nobackup		" don't accumulate backup file
-
-"set backupcopy=yes       " make a copy of the file and overwrite the original one
-"set backupdir=~/.vimback " place backup files in the ~/.vimback directory
-
-"if has("vms")
-  "set nobackup		 " do not keep a backup file, use versions instead
-"else
-  "set backup		 " keep a backup file
-"endif
-
-set history=300	   " keep 300 lines of command line history
-
 set timeout
 "set ttimeout
 "set notimeout
 set timeoutlen=1300
 set ttimeoutlen=100
-
-" generate CSS XHTML when using the :TOhtml command
-let html_use_css = 1
-let use_xhtml = 1
 
 
 " ---- Abbreviations ---------------------------------------------------
@@ -244,7 +245,7 @@ imap <leader><c-v> <c-o>v<c-v>
 map <leader><c-v> v<c-v>
 
 " delete buffer without closing window
-nmap <leader>b- :bnext<CR>:bdelete#<CR>:echo Buftabs_show()<CR>
+"nmap <leader>b- :bnext<CR>:bdelete#<CR>:echo Buftabs_show()<CR>
 
 " close window without deleting buffer
 nmap <leader>w- :close<CR>
@@ -257,10 +258,10 @@ command Scroll :windo setlocal scrollbind
 command Scrollno :windo setlocal noscrollbind
 
 " go to previous window / next window (see :h Ctrl-w_w)
-map <leader><tab> <c-w>w
-imap <leader><tab> <esc><C-w>wa
-map <leader><esc> <c-w>W
-imap <leader><esc> <esc><c-w>Wa
+map <F4> <c-w>w
+imap <F4> <esc><C-w>wa
+map <F3> <c-w>W
+imap <F3> <esc><c-w>Wa
 
 
 " Buffer & File Navigation
@@ -273,9 +274,9 @@ au BufEnter,BufFilePost * if expand("<afile>") !~ "://" | lcd %:p:h | endif
 
 " go to next buffer / previous buffer
 map <F2> :bn<CR>
-map! <F2> <esc>:bn<CR>
+imap <F2> <esc>:bn<CR>a
 map <F1> :bp<CR>
-map! <F1> <esc>:bp<CR>
+imap <F1> <esc>:bp<CR>a
 
 " toggle between two files/buffers. Precede this mapping with a number to go to
 " a given buffer number. Messes up marks wrt the ` char ... may reconsider ...
@@ -322,10 +323,11 @@ let treeExplVertical = 1    " split vertically
 let treeExplWinSize = 32    " make vertical split 32 columns wide
 let treeExplCloseExp = 1    " close VtreeExplorer after use
 "open VtreeExplorer
-map <leader>f :echo Buftabs_show()<CR>:VSTreeExplore<CR>
+"map <leader>f :echo Buftabs_show()<CR>:VSTreeExplore<CR>
+map <silent> <leader>f :VSTreeExplore<CR>
 map! <leader>f <esc>:VSTreeExplore<CR>
 " open VtreeExplorer & leave the explorer open
-map <leader>F :let treeExplCloseExp=0<CR>:echo Buftabs_show()<CR>:VSTreeExplore<CR>
+map <silent> <leader>F :let treeExplCloseExp=0<CR>:VSTreeExplore<CR>
 map! <leader>F <esc>:VSTreeExplore<CR>
 command Vt :VTreeExplore
 
@@ -342,24 +344,91 @@ command Vt :VTreeExplore
 " initiate Omni completion while typing a word (h: compl-omni)
 imap <leader>\ 
 
-" set natural language completion
+" set natural language completion dictionary
 set dictionary+=/usr/share/dict/american-english-large
-set complete+=k
-
-" Word completion dictionary
-set complete+=.         " current buffer
-set complete+=k         " dictionary
-set complete+=b         " other bufs
-set complete+=t         " tags
 
 " Completion options
 set completeopt+=menuone        " always show the completion menu
 set completeopt+=preview        " sometimes annoying window on the top
 set completeopt+=longest        " do not select the first variant by default
 
-" SuperTab -- remapping to free up the Tab key 
-let g:SuperTabMappingForward = '<leader><space>'
-let g:SuperTabDefaultCompletionType = 'context'
+" SuperTab settings
+let g:SuperTabDefaultCompletionType = "<c-x><c-n>"
+" SuperTab -- set default tab completion key to be <leader><space> & allow the
+" ability to toggle between that sequence and simply using the <tab> key:
+let SuperTabMappingForward = '<leader><space>'
+let g:SuperTab_tab = 0
+function! ToggleSuperTabMap()
+    if g:SuperTab_tab == 1
+        let g:SuperTabMappingForward = "<leader><space>"
+        let g:SuperTabMappingTabLiteral = "<tab>"
+        so ~/.vim/plugin/supertab.vim
+        let g:SuperTab_tab = 0
+        echo "SuperTab key = <leader><space>"
+    else
+        let g:SuperTabMappingForward = "<tab>"
+        let g:SuperTabMappingTabLiteral = "<leader><space>"
+        so ~/.vim/plugin/supertab.vim
+        let g:SuperTab_tab = 1
+        echo "SuperTab key = <tab>"
+    endif
+endfunction
+map <leader><tab> :call ToggleSuperTabMap()<CR>
+imap <leader><tab> <esc>:call ToggleSuperTabMap()<CR>a
+
+map <leader>xh :SuperTabHelp<CR>
+imap <leader>xh <esc>:SuperTabHelp<CR>a
+imap <leader>xn <c-x><c-n>
+imap <leader>xk <c-x><c-k>
+imap <leader>xl <c-x><c-l>
+imap <leader>x] <c-x><c-]>
+imap <leader>xf <c-x><c-f>
+imap <leader>xo <c-x><c-o>
+
+
+
+" Word completion dictionary
+"set complete+=.         " current buffer
+"set complete+=k         " dictionary
+"set complete+=b         " other bufs
+"set complete+=t         " tags
+
+
+" toggle tab completion - modify this to suit...
+" http://vim.wikia.com/wiki/Smart_mapping_for_tab_completion
+function! TabCompletion()
+  if mapcheck("\<tab>", "i") != ""
+    :iunmap <tab>
+    :iunmap <s-tab>
+    :iunmap <c-tab>
+    echo "tab completion off"
+  else
+    :imap <tab> <c-n>
+    :imap <s-tab> <c-p>
+    :imap <c-tab> <c-x><c-l>
+    echo "tab completion on"
+  endif
+endfunction
+"map <Leader>tc :call TabCompletion()<CR>
+
+
+" oh...here's another toggle function:
+" http://jayjohnston.com/linux/vim-toggle-indent-function.html
+"function! ToggleIndent()
+     "if g:indent_on == 1
+         ":set nocindent noai
+         "let g:indent_on = 0
+         "echo "autoindent off"
+     "else
+         ":set cindent ai
+         "let g:indent_on = 1
+         "echo "autoindent on"
+     "endif
+"endfunction
+
+"let g:indent_on = 1
+
+
 
 " use syntax highlighting defs to enable Omni-Completion after any
 " :filetype command using best available method
@@ -627,34 +696,58 @@ imap <leader>del <Esc>b:r !latin -e <cWORD><CR>a
 map <leader>dle be:!latin <cWORD><CR>
 imap <leader>dle <Esc>b:r !latin <cWORD><CR>a
 
-" start English spell checking
-map  <F5> :setlocal spell spelllang=en_us<CR>
-imap <F5> <esc>:setlocal spell spelllang=en_us<CR>a
-" start Spanish Spell-checking
-imap <F6> <esc>:setlocal spell spelllang=es<CR>a
-map  <F6> :setlocal spell spelllang=es<CR>
-" stop spell checking
-map  <F4> :setlocal nospell<CR>
-imap <F4> <esc>:setlocal nospell<CR>a
+" Toggle English spell checking on/off
+let g:SpellEng = 0
+function! ToggleSpellEng()
+    if g:SpellEng == 0
+        setlocal spell spelllang=en_us
+        let g:SpellEng = 1
+        let g:SpellEsp = 0
+        echo "Spell checking: English"
+    else
+        setlocal nospell
+        let g:SpellEng = 0
+        echo "Spellchecking Off"
+    endif
+endfunction
+map <F5> :call ToggleSpellEng()<CR>
 
-" filter through the 'boxes' program, surround blocks of text with a box
-" of text, useful for adding commenting to blocks of code
-vmap <leader>x3 !boxes -d pound-cmt<CR>
-nmap <leader>x3 !!boxes -d pound-cmt<CR>
-vmap <leader>x# !boxes -d shell<CR>
-nmap <leader>x# !!boxes -d shell<CR>
-vmap <leader>x' !boxes -d vim-cmt<CR>
-nmap <leader>x' !!boxes -d vim-cmt<CR>
-vmap <leader>x" !boxes -d vim-shell<CR>
-nmap <leader>x" !!boxes -d vim-shell<CR>
-vmap <leader>x8 !boxes -d simple<CR>
-nmap <leader>x8 !!boxes -d simple<CR>
-vmap <leader>x- !boxes -d stone<CR>
-nmap <leader>x- !!boxes -d stone<CR>
-vmap <leader>x= !boxes -d equals<CR>
-nmap <leader>x= !!boxes -d equals<CR>
-vmap <leader>xu  !boxes -r<CR>
-nmap <leader>xu  !!boxes -r<CR>
+" Toggle Español spell checking on/off
+let g:SpellEsp = 0
+function! ToggleSpellEsp()
+    if g:SpellEsp == 0
+        setlocal spell spelllang=es
+        let g:SpellEsp = 1
+        let g:SpellEng = 0
+        echo "Spell checking: Español"
+    else
+        setlocal nospell
+        let g:SpellEsp = 0
+        echo "Spellchecking Off"
+    endif
+endfunction
+map <F6> :call ToggleSpellEsp()<CR>
+
+
+
+" filter through the 'boxes' program, surround blocks of text with a box of
+" text, useful for adding commenting to blocks of code (find other mapping...)
+"vmap <leader>x3 !boxes -d pound-cmt<CR>
+"nmap <leader>x3 !!boxes -d pound-cmt<CR>
+"vmap <leader>x# !boxes -d shell<CR>
+"nmap <leader>x# !!boxes -d shell<CR>
+"vmap <leader>x' !boxes -d vim-cmt<CR>
+"nmap <leader>x' !!boxes -d vim-cmt<CR>
+"vmap <leader>x" !boxes -d vim-shell<CR>
+"nmap <leader>x" !!boxes -d vim-shell<CR>
+"vmap <leader>x8 !boxes -d simple<CR>
+"nmap <leader>x8 !!boxes -d simple<CR>
+"vmap <leader>x- !boxes -d stone<CR>
+"nmap <leader>x- !!boxes -d stone<CR>
+"vmap <leader>x= !boxes -d equals<CR>
+"nmap <leader>x= !!boxes -d equals<CR>
+"vmap <leader>xu  !boxes -r<CR>
+"nmap <leader>xu  !!boxes -r<CR>
 
 " Browse to URL under the cursor with a given browser:
 " w3m (Linux)

@@ -5,6 +5,7 @@
 " Notes:    includes bits & tips from numerous sources ...
 "-----------------------------------------------------------------------
 
+
 " ---- General Settings ------------------------------------------------
 
 " Use Vim rather then Vi settings (must be first; changes other options)
@@ -15,17 +16,10 @@ set runtimepath=~/.vim,$VIMRUNTIME
 "let &termencoding = &encoding
 "set encoding=utf-8
 
-"set writebackup     " backup before overwriting a file, remove after write
+set writebackup     " backup before overwriting a file, remove after write
 set nobackup		" don't accumulate backup file
-
-set backupcopy=yes       " make a copy of the file and overwrite the original one
-set backupdir=~/.vimback " place backup files in the ~/.vimback directory
-
-"if has("vms")
-  "set nobackup		 " do not keep a backup file, use versions instead
-"else
-  "set backup		 " keep a backup file
-"endif
+"set backupcopy=yes       " make a copy of the file and overwrite the original one
+"set backupdir=~/.vimback " place backup files in the ~/.vimback directory
 
 " Enable use of mouse in terminals
 set mouse=a
@@ -36,6 +30,11 @@ let html_use_css = 1
 let use_xhtml = 1
 
 set history=300	   " keep 300 lines of command line history
+
+" use backquote key for the leader, hit twice to type backquote character
+let mapleader = "`"
+imap <leader>` <esc>:set paste<CR>a`<esc>:set nopaste<CR>a
+let maplocalleader = "`"
 
 
 " ---- Appearance ------------------------------------------------------
@@ -52,7 +51,7 @@ set lbr
 " display as much as possible of the last line (minimize @'s)
 set display=lastline
 
-" min # of screen columns to keep left and right of the cursor when `nowrap' is set
+" min # of screen columns to keep left and right of the cursor when nowrap is set
 set sidescrolloff=1
 " min # of columns to scroll horizontally when the cursor moves off the screen
 set sidescroll=1
@@ -126,7 +125,7 @@ set shortmess=aO
 
 "hi User1 term=inverse,bold cterm=inverse,bold ctermfg=red
 
-set showcmd        " display incomplete commands
+set showcmd  " display incomplete commands
 
 
 " ---- Movement, Behaviour of Text -------------------------------------
@@ -159,6 +158,12 @@ set wcm=<C-Z>
 " do not load matchparen plugin, no auto-highlighting of matching parens
 let loaded_matchparen = 1
 
+" closetag -- set unaryTagsStack to its default value for html
+" Required: closetag.vim (script)
+let b:closetag_html_style=1
+" auto source closetag plugin for given filetypes
+au Filetype html,xml,xsl source ~/.vim/plugin/closetag.vim
+
 " automatically insert current comment leader after <Enter> in Insert mode
 set fo=r
 
@@ -185,86 +190,24 @@ set timeout
 set timeoutlen=1300
 set ttimeoutlen=100
 
-
-" ---- Abbreviations ---------------------------------------------------
-
-" year/month/date/day/time/zone abbreviation
-" Linux
-iab ydt <c-r>=strftime("%Y/%m/%d\ %a\ %k:%M\ %Z")<cr>
-" msWindows
-"iab ydt <c-r>=strftime("%Y/%m/%d\ %a\ %I:%M\ %z")<cr>
-
-" stamp a document retrieved from the net with date & time accessed
-iab acc [accessed <c-r>=strftime("%Y/%m/%d\ %a\ %k:%M\ %Z")<cr>]
-
-iab <l <leader <left>>
-iab +/- ±
-
-
-" ---- Mappings --------------------------------------------------------
-
-" use backquote key for the leader, hit twice to type backquote character.
-let mapleader = "`"
-imap <leader>` <esc>:set paste<CR>a`<esc>:set nopaste<CR>a
-let maplocalleader = "`"
-
-" clear search highlighting by hitting 'Return' key
-nnoremap <CR> :nohlsearch<CR>/<BS><BS>
-
-" go to command prompt using ; instead of : (avoiding the shift key...)
-noremap ; :
-
-" Use Space & BackSpace keys to scroll window forward & backward one screen
-" while in normal mode
-noremap <space> 
-noremap <BackSpace> 
-
-" in insert mode: yank word, line; delete word, line; put; undo; redo; put
-imap <leader>yw <c-o>yw
-imap <leader>yy <c-o>yy
-imap <leader>dw <c-o>dw
-imap <leader>dd <c-o>dd
-imap <leader>u <c-o>u
-imap <leader><c-r> <c-o>
-imap <leader>p <c-o>p
-" paste into gvim from other applications
-imap <leader>P <c-o>"+gP
-
-" paste/insert GNU Screen buffer (screenpaste.vim), change default mappings
-map  <Leader>sp  <Plug>ScreenpastePut
-map! <Leader>sp  <Plug>ScreenpastePut
-map  <Leader>sgp <Plug>ScreenpasteGPut
-nmap <Leader>sP  <Plug>ScreenpastePutBefore
-nmap <Leader>sgP <Plug>ScreenpasteGPutBefore
-
-" Go into -- (insert) VISUAL -- mode from insert mode
-imap <leader>v <c-o>v
-
-" Go into -- (insert) VISUAL BLOCK -- mode from insert mode 
-imap <leader><c-v> <c-o>v<c-v>
-map <leader><c-v> v<c-v>
-
-" delete buffer without closing window
-"nmap <leader>b- :bnext<CR>:bdelete#<CR>:echo Buftabs_show()<CR>
-
-" close window without deleting buffer
-nmap <leader>w- :close<CR>
-
-" Zoom into and out of a window (ZoomWin plugin):
-nmap <leader>z :ZoomWin<CR>
-
-" Set (or unset) all open windows to scroll together
-command Scroll :windo setlocal scrollbind
-command Scrollno :windo setlocal noscrollbind
-
-" go to previous window / next window (see :h Ctrl-w_w)
-map <F4> <c-w>w
-imap <F4> <esc><C-w>wa
-map <F3> <c-w>W
-imap <F3> <esc><c-w>Wa
+" deactivate scrollbind whenever entering one window, re-activate it when
+" entering the other -- drchip via vim_use
+fun! Scd()
+ augroup SCBNOSCB
+   au!
+   au WinEnter * if winnr() == 1|set scb|endif
+   au WinEnter * if winnr() == 2|set scb|endif
+   au WinLeave * if winnr() == 1|set noscb|endif
+  augroup END
+  norm! zR
+  wincmd l
+  norm! zR
+  wincmd h
+endfun
+command Scd :call Scd()
 
 
-" Buffer & File Navigation
+" ---- Buffer & File Navigation ----------------------------------------
 
 " switch between buffers without each one having to be saved first
 set hidden 
@@ -295,16 +238,16 @@ map <leader>8 :b8<cr>
 map <leader>9 :b9<cr>
 map <leader>0 :b10<cr>
 
-" settings for buftabs.vim, a simple script that shows a tabs-like list
-" of buffers in the bottom of the window in the command-line area
-let g:buftabs_only_basename=1
-
+" buftabs - shows list of buffers in the in the command-line area
+" Required: buftabs.vim (script)
 " List buffers & prompt for a selection, exits leaving buftabs displayed
 map <leader><CR> :echo Buftabs_show()<CR>:buffers<CR>:buffer 
 "map <leader><CR> :buffers<CR>:buffer<Space> <C-Z><C-Z>
 map! <leader><CR> <esc>:buffers<CR>:buffer 
+let g:buftabs_only_basename=1
 
-" Browse buffers with bufferlist.vim
+" Browse buffers with bufferlist
+" Required: bufferlist.vim (script)
 map! <leader>b <esc>:echo Buftabs_show()<CR>:call BufferList()<CR>
 map <leader>b :echo Buftabs_show()<CR>:call BufferList()<CR>
 let g:BufferListWidth = 28
@@ -313,10 +256,15 @@ hi BufferSelected term=NONE ctermfg=grey ctermbg=darkgrey cterm=bold
 hi BufferNormal term=NONE ctermfg=darkyellow ctermbg=black cterm=NONE
 
 " Browse buffers with the bufexplorer plugin
+" Required: bufexplorer.vim (script)
 map <leader>B :VSBufExplorer<CR>
 map! <leader>B :VSBufExplorer<CR>
 
+" delete buffer without closing window
+"nmap <leader>b- :bnext<CR>:bdelete#<CR>:echo Buftabs_show()<CR>
+
 " VtreeExplorer (file explorer) settings
+" Required: VtreeExplorer.vim (script)
 let treeExplNoList = 1      " don't list VtreeExplorer in buffer list
 let treeExplDirSort = 1     " sort directories first
 let treeExplVertical = 1    " split vertically
@@ -331,15 +279,30 @@ map <silent> <leader>F :let treeExplCloseExp=0<CR>:VSTreeExplore<CR>
 map! <leader>F <esc>:VSTreeExplore<CR>
 command Vt :VTreeExplore
 
-"Open NERD tree file explorer. Close after opening file:
-"map <leader>f :let NERDTreeQuitOnOpen=1<CR>:NERDTree<CR>
-"map! <leader>f :let NERDTreeQuitOnOpen=1<CR>:NERDTree<CR>
-"Leave NERD tree window open after opening file:
-"map <leader>F :let NERDTreeQuitOnOpen=0<CR>:NERDTree<CR>
-"map! <leader>F :let NERDTreeQuitOnOpen=0<CR>:NERDTree<CR>
+" settings for the MRU (Most Recently Used files) plugin
+" Required: mru.vim (script)
+"let MRU_File = '~/.vim/vim_mru_files' (<-- why won't this set?)
+command Mr :MRU
+let MRU_Max_Entries = 700
+let MRU_Window_Height = 15
 
 
-" Insert Completion
+" ---- Abbreviations ---------------------------------------------------
+
+" year/month/date/day/time/zone abbreviation
+" Linux
+iab ydt <c-r>=strftime("%Y/%m/%d\ %a\ %k:%M\ %Z")<cr>
+" mswin
+"iab ydt <c-r>=strftime("%Y/%m/%d\ %a\ %I:%M\ %z")<cr>
+
+" stamp a document retrieved from the net with date & time accessed
+iab acc [accessed <c-r>=strftime("%Y/%m/%d\ %a\ %k:%M\ %Z")<cr>]
+
+iab <l <lt>leader>
+ia +/- ±
+
+
+" ---- Insert Completion ----------------------------------------------
 
 " initiate Omni completion while typing a word (h: compl-omni)
 imap <leader>\ 
@@ -353,6 +316,7 @@ set completeopt+=preview        " sometimes annoying window on the top
 set completeopt+=longest        " do not select the first variant by default
 
 " SuperTab settings
+" Required: supertab.vim (script)
 let g:SuperTabDefaultCompletionType = "<c-x><c-n>"
 " SuperTab -- set default tab completion key to be <leader><space> & allow the
 " ability to toggle between that sequence and simply using the <tab> key:
@@ -385,6 +349,13 @@ imap <leader>x] <c-x><c-]>
 imap <leader>xf <c-x><c-f>
 imap <leader>xo <c-x><c-o>
 
+"let g:SuperTab_tab = 0
+"function! ToggleSuperTabMap()
+    "let g:SuperTabMappingForward = g:SuperTab_tab ? '<tab>' : '<leader><space>'
+    "let g:SuperTab_tab = !g:SuperTab_tab
+    "exec 'imap ' . g:SuperTabMappingForward . ' <c-n>'
+"endfunction
+"map <silent> <F3> :call ToggleSuperTabMap()<CR>
 
 
 " Word completion dictionary
@@ -392,42 +363,6 @@ imap <leader>xo <c-x><c-o>
 "set complete+=k         " dictionary
 "set complete+=b         " other bufs
 "set complete+=t         " tags
-
-
-" toggle tab completion - modify this to suit...
-" http://vim.wikia.com/wiki/Smart_mapping_for_tab_completion
-function! TabCompletion()
-  if mapcheck("\<tab>", "i") != ""
-    :iunmap <tab>
-    :iunmap <s-tab>
-    :iunmap <c-tab>
-    echo "tab completion off"
-  else
-    :imap <tab> <c-n>
-    :imap <s-tab> <c-p>
-    :imap <c-tab> <c-x><c-l>
-    echo "tab completion on"
-  endif
-endfunction
-"map <Leader>tc :call TabCompletion()<CR>
-
-
-" oh...here's another toggle function:
-" http://jayjohnston.com/linux/vim-toggle-indent-function.html
-"function! ToggleIndent()
-     "if g:indent_on == 1
-         ":set nocindent noai
-         "let g:indent_on = 0
-         "echo "autoindent off"
-     "else
-         ":set cindent ai
-         "let g:indent_on = 1
-         "echo "autoindent on"
-     "endif
-"endfunction
-
-"let g:indent_on = 1
-
 
 
 " use syntax highlighting defs to enable Omni-Completion after any
@@ -448,218 +383,42 @@ endif
 "imap <expr> <Tab> pumvisible() ? "<Tab>" : "<Tab><Down>"
 
 
-" ---- Misc Mappings ---------------------------------------------------
-
-" quickfix commands, jump fore & aft when using :helpgrep (:helpg )
-map <c-n> :cnext<CR>
-map <c-p> :cprevious<CR>
-
-" View personal tip sheet with less, in another Screen tty
-map <leader>h :silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>
-imap <leader>h <esc>:silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>a
-
-" Map insert-key to toggle between insert & normal modes
-"map! <Insert> <esc>
-"map <Insert> <esc><esc>a
-
-" F8 update (save) file (update only writes when buffer has been modified)
-map! <F8> <esc>:update<CR>a
-map  <F8> <esc>:update<CR>
-" Alt-s update file
-set <F29>=s
-map <F29> <a-s>
-map! <F29> <a-s>
-map! <a-s> <esc>:update<CR>a
-map  <a-s> <esc>:update<CR>
-
-" <F9> toggle paste mode on/off, useful when pasting text into terminal Vim
-set pastetoggle=<F9>        " toggle 'paste' option
-map <F9>        :set invpaste paste?<CR>
-imap <F9>   <C-O>:set invpaste<CR><C-O>/<BS>
-
-" <F10> toggles numbered lines on/off
-nmap <F10> :set nu!<CR>
-imap <F10> <c-o>:set nu!<CR>
-
-" reload vimrc file without having to quit & re-start
-map <leader>rc <esc>:source ~/.vimrc<CR>
-map! <leader>rc <esc>:source ~/.vimrc<CR>a
-"map <leader>rc <esc>:so C:\Program Files\Vim\_vimrc<CR> " (ms)
-"map! <leader>rc <esc>:so C:\Program Files\Vim\_vimrc<CR>a
-
-" open a window containing all highlight group names, in their own color
-command Hi so $VIMRUNTIME/syntax/hitest.vim
-
-" get unicode info for byte under cursor using the external 'unicode' command,
-" more detailed than the default g8 (output of which is already in statusline)
-map g8 :normal! vy<cr><cr>:!unicode \"<cr>
-
-" Remove trailing whitespace at the ends of lines, or maybe:  %s/\s\+$//e
-command Rws %s/\s*$//
-
-" remove spaces between quote markers (> >) in emails (is this wrong?)
-command Rqs :%s/>\s\+>/>>/g
-
-" remove m$ ^M line endings (tip#26)
-"command Ms :%s/\r/\r/g
-command Ms :%s/\r//g
-
-" replace the DOS style CR/LF line endings
-command Mm :%s///g
-
-" convert hex ascii codes to printable characters, ie 
-" Hello%20World.%20%20Good%2c%20bye. --> Hello World.  Good, bye.
-"for the whole file:
-command Hac :%s/%\(\x\x\)/\=nr2char('0x'.submatch(1))/g  
-"for the visually selected text:
-vmap hac :s/%\(\x\x\)/\=nr2char('0x'.submatch(1))/g
-
-" Set filetype to txt
-command Txt :set filetype=txt
-
-"Detect filetype
-command Ftd :filetype detect
-
-" view NERDCommenter help
-command Nerd :help NERDCommenter
-
-" use the txp script to print a letter-style output...
-command Let !txp -f11 -l72 -F0 %
-" ...or regular output
-command Txp !txp %
-
-" replace curly quotes with straight quotes
-cmap <leader>" % s/[“”]/"/g<cr>
-cmap <leader>' % s/[‘’]/'/g<cr>
-
-" replace all EM (U+2014) and EN (U+2013) dashes in file with two dashes
-cmap <leader>- % s/[–—―Ñ]/--/g<cr>
-" replace EM and EN dashes in file with two dashes, a space on either side
-cmap <leader>_ % s/[–—―Ñ]/ -- /g<cr>
-
-" replace all ellipsises (U+2026) with three decimals
-cmap <leader>. % s/[…É]/.../g<cr>
-
-" replace bullet characters (U+2022) with *
-cmap <leader>8 %s/[•·]/*/g<cr>
-
-" replace box drawing characters with ascii characters - + |
-"cmap <leader>\ % s/[┘┐┼┌└]/+/g<cr>:%s/─/-/g<cr>:%s/│/\|/g<cr>
-
-cmap <leader>+ % s/[┛┓┏┗]/+/g<cr>:%s/[━┯┷]/-/g<cr>:%s/[┃┠┨]/\|/g<cr>
-" replace box drawings character "heavy horizontal" (U+2501) with =
-cmap <leader>= %s/━/=/g<cr>
-
-" replace control characters in html files (for curly quotes, etc.) with ascii
-cmap <leader>,- % s/[]/--/g<cr>
-cmap <leader>,_ % s/[]/ -- /g<cr>
-cmap <leader>,' % s/[]/'/g<cr>
-cmap <leader>," % s/[]/"/g<cr>
-cmap <leader>,. % s//.../g<cr>
-
-"these next two don't work...they quit & not continue if something isn't found
-" replace all the above; curly quotes, EM & EN dashes, ellipses
-"cmap <leader>a :%s/[“”]/"/g<cr> \|:%s/[‘’]/'/g<cr> \|:%s/[—–Ð]/--/g<cr> \|:%s/…/.../g<cr>
-cmap <leader>A :%s/[“”]/"/g<cr>:%s/[‘’]/'/g<cr>:%s/[—–Ð]/ -- /g<cr>:%s/…/.../g<cr>
-" replace Õ Ò Ó Ê ¥ with ascii punctuation (that 
-cmap <leader>o :%s/[ÕÔ]/'/g<cr>:%s/[ÒÓ]/"/g<cr>:%s/¥/*/g<cr>:%s/Ê//g<cr>:%s/	//g<cr>
-cmap <leader>Y %s/^¥¥*/*/g<cr>
-
-" uppercase first letter of sentences in a file
-command Cs %s/[.!?]\_s\+\a/\U&\E/g
-" uppercase first letter of sentences in visually selected text
-vmap cs :s/[.!?]\_s\+\a/\U&\E/g<CR>
-" Title case visually selected text
-vmap ct :s/\<\(.\)\(\k*\)\>/\u\1\L\2/g<CR>
-
-" Write to a given directory with a file-name of:
-" <visuallyselectedtext>.txt (vmap), or type in the filename (map).
-vmap <leader>wf y :w ~/fields/<c-r>".txt
-nmap <leader>wf :w ~/fields/.txt<left><left><left><left>
-vmap <leader>wc y :w ~/comp/<c-r>".txt
-nmap <leader>wc :w ~/comp/.txt<left><left><left><left>
-vmap <leader>wl y :w ~/library/<c-r>".txt
-nmap <leader>wl :w ~/library/.txt<left><left><left><left>
-
-" process with wcalc -- position cursor immediately (or some number of spaces)
-" after the end of the formula in insert mode, <leader>= will output solution
-" in scientific notation:
-"inoremap <leader>= <Esc>Bi<CR><Esc>:co-<CR>j!!wcalc<CR>-$Jk$J$a<space>
-" or with 1021 digits after the decimal point:
-"inoremap <leader>+ <Esc>Bi<CR><Esc>:co-<CR>j!!wcalc -P1021<CR>-$Jk$J$a<space>
-
-" set lines to be broken after 80, 70, 60 columns, or to be not broken (=0)
-command T8 :set textwidth=80
-command T7 :set textwidth=70
-command T6 :set textwidth=60
-command T0 :set textwidth=0
-
-" Reformat paragraph; filter through par. Set something like this in zshrc:
-"   export PARINIT="B=.,?_A_a_0_q_Q Q=_s>|"
-" Note the _Q in there & see par(1); it cooresponds to a double quote. Remove
-" it if reformatting Vim comments, but leave it in otherwise so regular quotes
-" in prose, etc won't get messed up. Re par not handling unicode, see tip584,
-" or http://vim.wikia.com/wiki/Awesome_text_formatter #Unicode
-" 
-" reformat paragraph; break at default 80 columns, leave first line of paragraph
-" flush left (for bullet or numbered list) but indent all other lines 2 spaces:
-noremap <leader>q2 {v}!par -w s0rT4p2dh1 <CR>}lz.
-noremap! <leader>q2 <esc>{v}!par -w s0rT4p2dh1<CR>}lz.i
-vmap <leader>q2 !par -w s0rT4p2dh1<CR>}
-" ... 3 spaces:
-noremap <leader>q3 {v}!par -w s0rT4p3dh1<CR>}lz.
-noremap! <leader>q3 <esc>{v}!par -w s0rT4p3dh1<CR>}lz.i
-vmap <leader>q3 !par -w s0rT4p3dh1<CR>}
-" ... 4 spaces:
-noremap <leader>q4 {v}!par -w s0rT4p4dh1<CR>}lz.
-noremap! <leader>q4 <esc>{v}!par -w s0rT4p4dh1<CR>}lz.i
-vmap <leader>q4 !par -w s0rT4p4dh1<CR>}
-" ... 5 spaces:
-noremap <leader>q5 {v}!par -w s0rT4p5dh1<CR>}lz.
-noremap! <leader>q5 <esc>{v}!par -w s0rT4p5dh1<CR>}lz.i
-vmap <leader>q5 !par -w s0rT4p5dh1<CR>}
-"
-" reformat paragraph; break at default 80 columns -- keep text centered vertically on the screen
-"noremap <leader>ww {v}!par -w s0rT4<CR>}lz.
-"noremap! <leader>ww <esc>{v}!par -w s0rT4<CR>}lz.i
-"vmap <leader>ww !par -w s0rT4<CR>}
-" 
-" reformat paragraph; break at default 80 columns
-noremap <leader>q8 {v}!par -w s0rT4<CR>}l
-noremap! <leader>q8 <esc>{v}!par -w s0rT4<CR>}li
-vmap <leader>q8 !par -w s0rT4<CR>}
-" reformat paragraph; break at 70 columns
-noremap <leader>qq {v}!par -w70 s0rT4<CR>}l
-noremap! <leader>qq <esc>{v}!par -w70 s0rT4<CR>}li
-vmap <leader>qq !par -w70 s0rT4<CR>}
-" 
-" reformat paragraph; break at 74 columns
-noremap <leader>qw {v}!par -w74 s0rT4<CR>}l
-noremap! <leader>qw <esc>{v}!par -w74 s0rT4<CR>}li
-vmap <leader>qw !par -w74 s0rT4<CR>}
-" 
-" reformat paragraph; break at 60 columns
-noremap <leader>q6 {v}!par -w62 s0rT4<CR>}l
-noremap! <leader>q6 <esc>{v}!par -w62 s0rT4<CR>}li
-vmap <leader>q6 !par -w62 s0rT4<CR>}
-" 
-" filter entire file through par; default = 80 columns
-nmap <leader>qgg :% !par -w s0rT4<CR>
-imap <leader>qgg <esc>:% !par -w s0rT4<CR>
-" filter entire file through par; break at 70 columns
-nmap <leader>qg7 :% !par -w70 s0rT4<CR>
-imap <leader>qg7 <esc>:% !par -w70 s0rT4<CR>
-" filter entire file through par; break at 62 columns
-nmap <leader>qg6 :% !par -w62 s0rT4<CR>
-imap <leader>qg6 <esc>:% !par -w62 s0rT4<CR>
-" 
-" filter through par, you supply the arguments (<leader>q<space>)
-nmap <leader>q  {!}par 
-imap <leader>q  <Esc>{!}par 
-vmap <leader>q  !par 
+" toggle tab completion - modify this to suit...
+" http://vim.wikia.com/wiki/Smart_mapping_for_tab_completion
+"function! TabCompletion()
+  "if mapcheck("\<tab>", "i") != ""
+    ":iunmap <tab>
+    ":iunmap <s-tab>
+    ":iunmap <c-tab>
+    "echo "tab completion off"
+  "else
+    ":imap <tab> <c-n>
+    ":imap <s-tab> <c-p>
+    ":imap <c-tab> <c-x><c-l>
+    "echo "tab completion on"
+  "endif
+"endfunction
+"map <Leader>tc :call TabCompletion()<CR>
 
 
-" Dictionaries
+" oh...here's another toggle function:
+" http://jayjohnston.com/linux/vim-toggle-indent-function.html
+"function! ToggleIndent()
+     "if g:indent_on == 1
+         ":set nocindent noai
+         "let g:indent_on = 0
+         "echo "autoindent off"
+     "else
+         ":set cindent ai
+         "let g:indent_on = 1
+         "echo "autoindent on"
+     "endif
+"endfunction
+
+"let g:indent_on = 1
+
+
+" -------- Dictionaries ------------------------------------------------
 
 " filter word under cursor through dict, view definition(s)
 map <leader>di be:!def <cWORD><CR>
@@ -711,6 +470,7 @@ function! ToggleSpellEng()
     endif
 endfunction
 map <F5> :call ToggleSpellEng()<CR>
+imap <F5> <esc>:call ToggleSpellEng()<CR>a
 
 " Toggle Español spell checking on/off
 let g:SpellEsp = 0
@@ -727,8 +487,265 @@ function! ToggleSpellEsp()
     endif
 endfunction
 map <F6> :call ToggleSpellEsp()<CR>
+imap <F6> <esc>:call ToggleSpellEsp()<CR>a
 
 
+" ---- Reformatting Paragraphs, etc ------------------------------------
+
+" filter through par, a paragraph reformatter 
+" Required: par - http://www.nicemice.net/par/
+" Set something like this in zshrc:
+"     export PARINIT="B=.,?_A_a_0_q_Q Q=_s>|"
+" Note the _Q in there, see par(1) -- it cooresponds to a double quote. Remove
+" it if reformatting Vim comments, but leave it in otherwise so regular quotes
+" in prose, etc won't get messed up. Re par not handling unicode, see tip584,
+" or http://vim.wikia.com/wiki/Awesome_text_formatter
+" reformat paragraph; break at default 80 columns, leave first line of paragraph
+" flush left (for bullet or numbered list) but indent all other lines 2 spaces:
+noremap <leader>q2 {v}!par -w s0rT4p2dh1 <CR>}lz.
+noremap! <leader>q2 <esc>{v}!par -w s0rT4p2dh1<CR>}lz.i
+vmap <leader>q2 !par -w s0rT4p2dh1<CR>}
+" ... 3 spaces:
+noremap <leader>q3 {v}!par -w s0rT4p3dh1<CR>}lz.
+noremap! <leader>q3 <esc>{v}!par -w s0rT4p3dh1<CR>}lz.i
+vmap <leader>q3 !par -w s0rT4p3dh1<CR>}
+" ... 4 spaces:
+noremap <leader>q4 {v}!par -w s0rT4p4dh1<CR>}lz.
+noremap! <leader>q4 <esc>{v}!par -w s0rT4p4dh1<CR>}lz.i
+vmap <leader>q4 !par -w s0rT4p4dh1<CR>}
+" ... 5 spaces:
+noremap <leader>q5 {v}!par -w s0rT4p5dh1<CR>}lz.
+noremap! <leader>q5 <esc>{v}!par -w s0rT4p5dh1<CR>}lz.i
+vmap <leader>q5 !par -w s0rT4p5dh1<CR>}
+" reformat paragraph; break at default 80 columns -- keep text centered
+" vertically on the screen
+"noremap <leader>ww {v}!par -w s0rT4<CR>}lz.
+"noremap! <leader>ww <esc>{v}!par -w s0rT4<CR>}lz.i
+"vmap <leader>ww !par -w s0rT4<CR>}
+" 
+" reformat paragraph; break at default 80 columns
+noremap <leader>q8 {v}!par -w s0rT4<CR>}l
+noremap! <leader>q8 <esc>{v}!par -w s0rT4<CR>}li
+vmap <leader>q8 !par -w s0rT4<CR>}
+" reformat paragraph; break at 70 columns
+noremap <leader>qq {v}!par -w70 s0rT4<CR>}l
+noremap! <leader>qq <esc>{v}!par -w70 s0rT4<CR>}li
+vmap <leader>qq !par -w70 s0rT4<CR>}
+" 
+" reformat paragraph; break at 74 columns
+noremap <leader>qw {v}!par -w74 s0rT4<CR>}l
+noremap! <leader>qw <esc>{v}!par -w74 s0rT4<CR>}li
+vmap <leader>qw !par -w74 s0rT4<CR>}
+" 
+" reformat paragraph; break at 60 columns
+noremap <leader>q6 {v}!par -w62 s0rT4<CR>}l
+noremap! <leader>q6 <esc>{v}!par -w62 s0rT4<CR>}li
+vmap <leader>q6 !par -w62 s0rT4<CR>}
+" 
+" filter entire file through par; default = 80 columns
+nmap <leader>qgg :% !par -w s0rT4<CR>
+imap <leader>qgg <esc>:% !par -w s0rT4<CR>
+" filter entire file through par; break at 70 columns
+nmap <leader>qg7 :% !par -w70 s0rT4<CR>
+imap <leader>qg7 <esc>:% !par -w70 s0rT4<CR>
+" filter entire file through par; break at 62 columns
+nmap <leader>qg6 :% !par -w62 s0rT4<CR>
+imap <leader>qg6 <esc>:% !par -w62 s0rT4<CR>
+" 
+" filter through par, you supply the arguments (<leader>q<space>)
+nmap <leader>q  {!}par 
+imap <leader>q  <Esc>{!}par 
+vmap <leader>q  !par 
+
+" set lines to be broken after 80, 70, 60 columns, or to be not broken (=0)
+command T8 :set textwidth=80
+command T7 :set textwidth=70
+command T6 :set textwidth=60
+command T0 :set textwidth=0
+
+
+" ---- Mappings --------------------------------------------------------
+
+" clear search highlighting by hitting 'Return' key
+nnoremap <CR> :nohlsearch<CR>/<BS><BS>
+
+" go to command prompt using ; instead of : (avoiding the shift key...)
+noremap ; :
+
+" Use Space & BackSpace keys to scroll window forward & backward one screen
+" while in normal mode
+noremap <space> 
+noremap <BackSpace> 
+
+" in insert mode: yank word, line; delete word, line; put; undo; redo; put
+imap <leader>yw <c-o>yw
+imap <leader>yy <c-o>yy
+imap <leader>dw <c-o>dw
+imap <leader>dd <c-o>dd
+imap <leader>u <c-o>u
+imap <leader><c-r> <c-o>
+imap <leader>p <c-o>p
+" paste into gvim from other applications
+imap <leader>P <c-o>"+gP
+
+" paste/insert GNU Screen buffer, change default mappings
+" Required: screenpaste.vim (script), GNU Screen (external program)
+map  <Leader>sp  <Plug>ScreenpastePut
+map! <Leader>sp  <Plug>ScreenpastePut
+map  <Leader>sgp <Plug>ScreenpasteGPut
+nmap <Leader>sP  <Plug>ScreenpastePutBefore
+nmap <Leader>sgP <Plug>ScreenpasteGPutBefore
+
+" Go into -- (insert) VISUAL -- mode from insert mode
+imap <leader>v <c-o>v
+
+" Go into -- (insert) VISUAL BLOCK -- mode from insert mode 
+imap <leader><c-v> <c-o>v<c-v>
+map <leader><c-v> v<c-v>
+
+" close window without deleting buffer
+nmap <leader>w- :close<CR>
+
+" Zoom into and out of a window (ZoomWin plugin):
+nmap <leader>z :ZoomWin<CR>
+
+" Set (or unset) all open windows to scroll together
+command Scroll :windo setlocal scrollbind
+command Scrollno :windo setlocal noscrollbind
+
+" go to previous window / next window (see :h Ctrl-w_w)
+map <F4> <c-w>w
+imap <F4> <esc><C-w>wa
+map <F3> <c-w>W
+imap <F3> <esc><c-w>Wa
+
+" quickfix commands, jump fore & aft when using :helpgrep (:helpg )
+map <c-n> :cnext<CR>
+map <c-p> :cprevious<CR>
+
+" View personal tip sheet with less, in another Screen tty
+" Required: custom .txt file, GNU Screen
+map <leader>h :silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>
+imap <leader>h <esc>:silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>a
+
+" F8 update (save) file (update only writes when buffer has been modified)
+map! <F8> <esc>:update<CR>a
+map  <F8> <esc>:update<CR>
+" Alt-s update file
+set <F29>=s
+map <F29> <a-s>
+map! <F29> <a-s>
+map! <a-s> <esc>:update<CR>a
+map  <a-s> <esc>:update<CR>
+
+" <F9> toggle paste mode on/off, useful when pasting text into terminal Vim
+set pastetoggle=<F9>        " toggle 'paste' option
+map <F9>        :set invpaste paste?<CR>
+imap <F9>   <C-O>:set invpaste<CR><C-O>/<BS>
+
+" <F10> toggles numbered lines on/off
+nmap <F10> :set nu!<CR>
+imap <F10> <c-o>:set nu!<CR>
+
+" reload vimrc file without having to quit & re-start
+map <leader>rc <esc>:source ~/.vimrc<CR>
+map! <leader>rc <esc>:source ~/.vimrc<CR>a
+"map <leader>rc <esc>:so C:\Program Files\Vim\_vimrc<CR> " (mswin)
+"map! <leader>rc <esc>:so C:\Program Files\Vim\_vimrc<CR>a
+
+" open a window containing all highlight group names, in their own color
+command Hi so $VIMRUNTIME/syntax/hitest.vim
+
+" get unicode info for byte under cursor, more detailed info than default g8
+" Required: unicode (external program) - cli unicode database query tool
+map g8 :normal! vy<cr><cr>:!unicode \"<cr>
+
+" Remove trailing whitespace at the ends of lines ( or maybe: %s/\s\+$//e )
+command Rws %s/\s*$//
+
+" remove spaces between quote markers (> >) in emails (is this wrong?)
+command Rqs :%s/>\s\+>/>>/g
+
+" remove m$ ^M line endings (tip#26)
+"command Ms :%s/\r/\r/g
+command Ms :%s/\r//g
+
+" replace the DOS style CR/LF line endings
+command Mm :%s///g
+
+" convert hex ascii codes to printable characters, eg:
+" Hello%20World.%20%20Good%2c%20bye. --> Hello World.  Good, bye.
+"for the whole file:
+command Hac :%s/%\(\x\x\)/\=nr2char('0x'.submatch(1))/g  
+"for the visually selected text:
+vmap hac :s/%\(\x\x\)/\=nr2char('0x'.submatch(1))/g
+
+"Detect filetype
+command Ftd :filetype detect
+
+" Set filetype to txt
+command Txt :set filetype=txt
+
+" view NERDCommenter help
+" Required: nerdmmenter.vim (script)
+command Nerd :help NERDCommenter
+
+" use the txp script to print a letter-style output...
+" Required: txp - custom shell script, see http://b79.net
+command Let !txp -f11 -l72 -F0 %
+" ...or regular output
+command Txp !txp %
+
+" replace curly quotes with straight quotes
+cmap <leader>" % s/[“”]/"/g<cr>
+cmap <leader>' % s/[‘’]/'/g<cr>
+
+" replace all EM (U+2014) and EN (U+2013) dashes in file with two dashes
+cmap <leader>- % s/[–—―Ñ]/--/g<cr>
+" replace EM and EN dashes in file with two dashes, a space on either side
+cmap <leader>_ % s/[–—―Ñ]/ -- /g<cr>
+
+" replace all ellipsises (U+2026) with three decimals
+cmap <leader>. % s/[…É]/.../g<cr>
+
+" replace bullet characters (U+2022) with *
+cmap <leader>8 %s/[•·]/*/g<cr>
+
+" replace box drawing characters with ascii characters - + |
+cmap <leader>\ % s/[┘┐┼┌└]/+/g<cr>:%s/─/-/g<cr>:%s/│/\|/g<cr>
+
+cmap <leader>+ % s/[┛┓┏┗]/+/g<cr>:%s/[━┯┷]/-/g<cr>:%s/[┃┠┨]/\|/g<cr>
+" replace box drawings character "heavy horizontal" (U+2501) with =
+cmap <leader>= %s/━/=/g<cr>
+
+" replace control characters in html files (for curly quotes, etc.) with ascii
+cmap <leader>,- % s/[]/--/g<cr>
+cmap <leader>,_ % s/[]/ -- /g<cr>
+cmap <leader>,' % s/[]/'/g<cr>
+cmap <leader>," % s/[]/"/g<cr>
+cmap <leader>,. % s//.../g<cr>
+
+"these next two don't work...they quit & not continue if something isn't found
+" replace all the above; curly quotes, EM & EN dashes, ellipses
+"cmap <leader>a :%s/[“”]/"/g<cr> \|:%s/[‘’]/'/g<cr> \|:%s/[—–Ð]/--/g<cr> \|:%s/…/.../g<cr>
+cmap <leader>A :%s/[“”]/"/g<cr>:%s/[‘’]/'/g<cr>:%s/[—–Ð]/ -- /g<cr>:%s/…/.../g<cr>
+" replace Õ Ò Ó Ê ¥ with ascii punctuation (that 
+cmap <leader>o :%s/[ÕÔ]/'/g<cr>:%s/[ÒÓ]/"/g<cr>:%s/¥/*/g<cr>:%s/Ê//g<cr>:%s/	//g<cr>
+cmap <leader>Y %s/^¥¥*/*/g<cr>
+
+" uppercase first letter of sentences in a file
+command Cs %s/[.!?]\_s\+\a/\U&\E/g
+" uppercase first letter of sentences in visually selected text
+vmap cs :s/[.!?]\_s\+\a/\U&\E/g<CR>
+" Title case visually selected text
+vmap ct :s/\<\(.\)\(\k*\)\>/\u\1\L\2/g<CR>
+
+" process with wcalc -- position cursor immediately (or some number of spaces)
+" after the end of the formula in insert mode, <leader>= will output solution
+" in scientific notation:
+"inoremap <leader>= <Esc>Bi<CR><Esc>:co-<CR>j!!wcalc<CR>-$Jk$J$a<space>
+" or with 1021 digits after the decimal point:
+"inoremap <leader>+ <Esc>Bi<CR><Esc>:co-<CR>j!!wcalc -P1021<CR>-$Jk$J$a<space>
 
 " filter through the 'boxes' program, surround blocks of text with a box of
 " text, useful for adding commenting to blocks of code (find other mapping...)
@@ -749,33 +766,34 @@ map <F6> :call ToggleSpellEsp()<CR>
 "vmap <leader>xu  !boxes -r<CR>
 "nmap <leader>xu  !!boxes -r<CR>
 
-" Browse to URL under the cursor with a given browser:
-" w3m (Linux)
-map <leader>w3 :update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>
-imap <leader>w3 <esc>:update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>a
-" elinks (Linux)
-map <leader>we :update<CR>:silent !screen -t 'elinks' elinks '<cWORD>'<CR>
-imap <leader>we <esc>:update<CR>:silent !screen -t 'elinks' elinks '<cWORD>'<CR>a
-
-" opera (Linux)
-map <leader>wo :update<CR>:!opera '<cWORD>'<CR>
-imap <leader>wo <esc>:update<CR>:!opera '<cWORD>'<CR>a
-" FireFox (Linux)
-map <leader>wf :update<CR>:!firefox '<cWORD>'<CR>
-imap <leader>wf <esc>:update<CR>:!firefox '<cWORD>'<CR>a
-
-" open webpage in another buffer using the browser.vim plugin
+" Open URL in another buffer (messes up syntax coloring of other buffers...)
+" Required: browser.vim (script)
 map <leader>wv :WebBrowser <c-r><c-a><CR>
 imap <leader>wv :WebBrowser <c-r><c-a><CR>
-
 " Browse using the browser.vim plugin, starts the command:
 map <leader>ww :WebBrowser 
+
+" Browse to URL under the cursor with a given browser
+" Required: various web browsers (external programs)
+" w3m
+map <leader>w3 :update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>
+imap <leader>w3 <esc>:update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>a
+" elinks
+map <leader>we :update<CR>:silent !screen -t 'elinks' elinks '<cWORD>'<CR>
+imap <leader>we <esc>:update<CR>:silent !screen -t 'elinks' elinks '<cWORD>'<CR>a
+" opera
+map <leader>wo :update<CR>:!opera '<cWORD>'<CR>
+imap <leader>wo <esc>:update<CR>:!opera '<cWORD>'<CR>a
+" Firefox
+map <leader>wf :update<CR>:!firefox '<cWORD>'<CR>
+imap <leader>wf <esc>:update<CR>:!firefox '<cWORD>'<CR>a
 
 " play a stream (.pls url for example) with mplayer
 "map <leader>bm :update<CR>:!screen -t mplay screen_mplay '<cWORD>'<CR>
 "imap <leader>bm <esc>:update<CR>:!screen -t mplay screen_mplay '<cWORD>'<CR>a
 
 " Open current HTML file in given browser (Tip#684):
+" Required: various web browsers (external programs)
 " w3m (Linux)
 map  <leader>ow :!w3m "%"<CR><Enter>
 imap <leader>ow <esc>:!w3m "%"<CR><Enter>a
@@ -803,10 +821,10 @@ imap <leader>os <esc>:!open -a /Applications/Safari.app "%"<CR><Enter>a
 
 " trying to get this to work with the youtube script I wrote, but having
 " problems with filename expansion...
-map <leader>U :!echo '<cWORD>'<CR>
+"map <leader>U :!echo '<cWORD>'<CR>
 
 
-" Keyboard Remappings
+" ---- Keyboard Remappings ---------------------------------------------
 
 " HappyHacking Kybd specific mapping: Alt-Return deletes word before cursor,
 " Fn-Return (embedded 'Enter' key) deletes word after cursor.
@@ -824,7 +842,6 @@ map <F20> de
 " keys. The F keys are used here to send console terminal keycodes,
 " allowing this to work in terminal versions of Vim (Tip 1272).
 
-"
 " forward/backward by word mapped to Alt-` , Alt--
 set <F28>=`
 map <F28> <a-`>
@@ -928,8 +945,8 @@ map <F18>   
 imap <F18>  
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" " go to next buffer / previous buffer (F11 & F12 mapped to Fn-Tab & Fn-Esc "
-" " in Happy Hacking Keyboard via kmap file)                                 "
+"" go to next buffer / previous buffer (F11 & F12 mapped to Fn-Tab & Fn-Esc "
+"" in Happy Hacking Keyboard via kmap file)                                 "
 " set <F11>=[23~                                                           "
 " set <F12>=[24~                                                           "
 " map <F11> :bnext!<CR>                                                      "
@@ -939,6 +956,8 @@ imap <F18>  
 "                                                                            "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+
+" ---- miscellanea to revisit ------------------------------------------
 
 " Tabs -- not using them as much now...need to reevaluate these mappings
 set showtabline=1
@@ -974,9 +993,6 @@ nmap <leader>t- :bn<CR>:bw#<CR>:tabclose<CR>
 "                                                                           "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-
-" misc to revisit...
-
 " reStructuredText tools (using Pandoc's extended Markdown now, just
 " keeping this around to maybe apply some of this to markdown syntax.
 " ...
@@ -999,8 +1015,8 @@ nmap <leader>t- :bn<CR>:bw#<CR>:tabclose<CR>
 " map <leader>r+ yypv$r+o<esc>o
 " map! <leader>r+ <esc>yypv$r+o<esc>o
 
-" ConTeX source files - save file, generate PDF, delete temporary files,
-" preview pdf in TeXniscope
+" ConTeX source files (need to dive into ConTeX & figure this stuff out...)
+" save file, generate PDF, delete temporary files, preview pdf in TeXniscope
 "
 map  <leader>df <esc>k:w<CR>:silent !texexec --pdf %:p<CR>:silent !texutil --purge %<<CR>:silent !open -a /Applications/TeXniscope.app %<".pdf"<CR>kk<c-l>
 map! <leader>df <esc>k:w<CR>:silent !texexec --pdf %:p<CR>:silent !texutil --purge %<<CR>:silent !open -a /Applications/TeXniscope.app %<".pdf"<CR>kk<c-l>a
@@ -1013,18 +1029,7 @@ map! <leader>dvi <esc>k:w<CR>:silent !texexec %:p<CR>:silent !xdvi %<".dvi"<CR>k
 " map <leader>dvt <esc>k:w<CR>:silent !texexec %:p >/dev/null<CR>:silent !xdvi %<".dvi"<CR>kk<c-l>
 
 
-" ---- Plugins ---------------------------------------------------------
-
-" closetag -- set unaryTagsStack to its default value for html
-let b:closetag_html_style=1
-" auto source closetag plugin for given filetypes
-au Filetype html,xml,xsl source ~/.vim/plugin/closetag.vim
-
-" settings for the MRU (Most Recently Used files) plugin
-"let MRU_File = '~/.vim/vim_mru_files'
-command Mr :MRU
-let MRU_Max_Entries = 700
-let MRU_Window_Height = 15
+" ---- autocommands ----------------------------------------------------
 
 " read Ms-Word documents, requires 'antiword' (tip#305)
 autocmd BufReadPre *.doc set ro
@@ -1035,9 +1040,6 @@ autocmd BufReadPost *.doc %!antiword "%"
 autocmd BufReadPre *.rtf set ro
 autocmd BufReadPre *.rtf set hlsearch!
 autocmd BufReadPost *.rtf %!unrtf --text "%"
-
-
-" ---- Misc Functions, etc. --------------------------------------------
 
 " when we reload, tell vim to restore the cursor to the saved position
 " http://vim.wikia.com/wiki/VimTip80
@@ -1070,18 +1072,4 @@ augroup END
 autocmd BufWinLeave *.* mkview
 autocmd BufWinEnter *.* silent loadview
 
-" deactivate scrollbind whenever entering one window, re-activate it when
-" entering the other -- drchip via vim_use. To use, :call Scd()
-fun! Scd()
- augroup SCBNOSCB
-   au!
-   au WinEnter * if winnr() == 1|set scb|endif
-   au WinEnter * if winnr() == 2|set scb|endif
-   au WinLeave * if winnr() == 1|set noscb|endif
-  augroup END
-  norm! zR
-  wincmd l
-  norm! zR
-  wincmd h
-endfun
 

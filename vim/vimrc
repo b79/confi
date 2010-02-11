@@ -159,7 +159,7 @@ set wcm=<C-Z>
 let loaded_matchparen = 1
 
 " closetag -- set unaryTagsStack to its default value for html
-" Required: closetag.vim (script)
+" Requires: closetag.vim (script)
 let b:closetag_html_style=1
 " auto source closetag plugin for given filetypes
 au Filetype html,xml,xsl source ~/.vim/plugin/closetag.vim
@@ -239,7 +239,7 @@ map <leader>9 :b9<cr>
 map <leader>0 :b10<cr>
 
 " buftabs - shows list of buffers in the in the command-line area
-" Required: buftabs.vim (script)
+" Requires: buftabs.vim (script)
 " List buffers & prompt for a selection, exits leaving buftabs displayed
 map <leader><CR> :echo Buftabs_show()<CR>:buffers<CR>:buffer 
 "map <leader><CR> :buffers<CR>:buffer<Space> <C-Z><C-Z>
@@ -247,7 +247,7 @@ map! <leader><CR> <esc>:buffers<CR>:buffer
 let g:buftabs_only_basename=1
 
 " Browse buffers with bufferlist
-" Required: bufferlist.vim (script)
+" Requires: bufferlist.vim (script)
 map! <leader>b <esc>:echo Buftabs_show()<CR>:call BufferList()<CR>
 map <leader>b :echo Buftabs_show()<CR>:call BufferList()<CR>
 let g:BufferListWidth = 28
@@ -256,7 +256,7 @@ hi BufferSelected term=NONE ctermfg=grey ctermbg=darkgrey cterm=bold
 hi BufferNormal term=NONE ctermfg=darkyellow ctermbg=black cterm=NONE
 
 " Browse buffers with the bufexplorer plugin
-" Required: bufexplorer.vim (script)
+" Requires: bufexplorer.vim (script)
 map <leader>B :VSBufExplorer<CR>
 map! <leader>B :VSBufExplorer<CR>
 
@@ -264,7 +264,7 @@ map! <leader>B :VSBufExplorer<CR>
 "nmap <leader>b- :bnext<CR>:bdelete#<CR>:echo Buftabs_show()<CR>
 
 " VtreeExplorer (file explorer) settings
-" Required: VtreeExplorer.vim (script)
+" Requires: VtreeExplorer.vim (script)
 let treeExplNoList = 1      " don't list VtreeExplorer in buffer list
 let treeExplDirSort = 1     " sort directories first
 let treeExplVertical = 1    " split vertically
@@ -280,7 +280,7 @@ map! <leader>F <esc>:VSTreeExplore<CR>
 command Vt :VTreeExplore
 
 " settings for the MRU (Most Recently Used files) plugin
-" Required: mru.vim (script)
+" Requires: mru.vim (script)
 "let MRU_File = '~/.vim/vim_mru_files' (<-- why won't this set?)
 command Mr :MRU
 let MRU_Max_Entries = 700
@@ -316,7 +316,7 @@ set completeopt+=preview        " sometimes annoying window on the top
 set completeopt+=longest        " do not select the first variant by default
 
 " SuperTab settings
-" Required: supertab.vim (script)
+" Requires: supertab.vim (script)
 let g:SuperTabDefaultCompletionType = "<c-x><c-n>"
 " SuperTab -- set default tab completion key to be <leader><space> & allow the
 " ability to toggle between that sequence and simply using the <tab> key:
@@ -493,7 +493,7 @@ imap <F6> <esc>:call ToggleSpellEsp()<CR>a
 " ---- Reformatting Paragraphs, etc ------------------------------------
 
 " filter through par, a paragraph reformatter 
-" Required: par - http://www.nicemice.net/par/
+" Requires: par - http://www.nicemice.net/par/
 " Set something like this in zshrc:
 "     export PARINIT="B=.,?_A_a_0_q_Q Q=_s>|"
 " Note the _Q in there, see par(1) -- it cooresponds to a double quote. Remove
@@ -589,7 +589,7 @@ imap <leader>p <c-o>p
 imap <leader>P <c-o>"+gP
 
 " paste/insert GNU Screen buffer, change default mappings
-" Required: screenpaste.vim (script), GNU Screen (external program)
+" Requires: screenpaste.vim (script), GNU Screen (external program)
 map  <Leader>sp  <Plug>ScreenpastePut
 map! <Leader>sp  <Plug>ScreenpastePut
 map  <Leader>sgp <Plug>ScreenpasteGPut
@@ -624,7 +624,7 @@ map <c-n> :cnext<CR>
 map <c-p> :cprevious<CR>
 
 " View personal tip sheet with less, in another Screen tty
-" Required: custom .txt file, GNU Screen
+" Requires: custom .txt file, GNU Screen
 map <leader>h :silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>
 imap <leader>h <esc>:silent !screen -t 'John-Vim' less -cL ~/comp/soft/vim/vim_how.txt<CR>a
 
@@ -657,7 +657,7 @@ map! <leader>rc <esc>:source ~/.vimrc<CR>a
 command Hi so $VIMRUNTIME/syntax/hitest.vim
 
 " get unicode info for byte under cursor, more detailed info than default g8
-" Required: unicode (external program) - cli unicode database query tool
+" Requires: unicode (external program) - cli unicode database query tool
 map g8 :normal! vy<cr><cr>:!unicode \"<cr>
 
 " Remove trailing whitespace at the ends of lines ( or maybe: %s/\s\+$//e )
@@ -687,11 +687,11 @@ command Ftd :filetype detect
 command Txt :set filetype=txt
 
 " view NERDCommenter help
-" Required: nerdmmenter.vim (script)
+" Requires: nerdmmenter.vim (script)
 command Nerd :help NERDCommenter
 
 " use the txp script to print a letter-style output...
-" Required: txp - custom shell script, see http://b79.net
+" Requires: txp - custom shell script, see http://b79.net
 command Let !txp -f11 -l72 -F0 %
 " ...or regular output
 command Txp !txp %
@@ -767,14 +767,14 @@ vmap ct :s/\<\(.\)\(\k*\)\>/\u\1\L\2/g<CR>
 "nmap <leader>xu  !!boxes -r<CR>
 
 " Open URL in another buffer (messes up syntax coloring of other buffers...)
-" Required: browser.vim (script)
+" Requires: browser.vim (script)
 map <leader>wv :WebBrowser <c-r><c-a><CR>
 imap <leader>wv :WebBrowser <c-r><c-a><CR>
 " Browse using the browser.vim plugin, starts the command:
 map <leader>ww :WebBrowser 
 
 " Browse to URL under the cursor with a given browser
-" Required: various web browsers (external programs)
+" Requires: various web browsers (external programs)
 " w3m
 map <leader>w3 :update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>
 imap <leader>w3 <esc>:update<CR>:silent !screen -t 'w3m' w3m '<cWORD>'<CR>a
@@ -793,7 +793,7 @@ imap <leader>wf <esc>:update<CR>:!firefox '<cWORD>'<CR>a
 "imap <leader>bm <esc>:update<CR>:!screen -t mplay screen_mplay '<cWORD>'<CR>a
 
 " Open current HTML file in given browser (Tip#684):
-" Required: various web browsers (external programs)
+" Requires: various web browsers (external programs)
 " w3m (Linux)
 map  <leader>ow :!w3m "%"<CR><Enter>
 imap <leader>ow <esc>:!w3m "%"<CR><Enter>a
@@ -929,16 +929,17 @@ map <a-l> <c-w>>
 imap <a-l> <esc><c-w>>a
 
 " Used with a keymap setting F15=Ctrl-Space, F16=Ctrl-BackSpace, F17=Alt-Space
-" and F18=Alt-BackSpace; these key combinations will scroll to the first line of
-" the file, the last line of the file, forward one line, backward one line.
+" and F18=Alt-BackSpace; these key combinations will scroll forward one page,
+" backward one page, forward one line, backward one line.
+
 set <F15>=[28~
 set <F16>=[29~
 set <F17>=[31~
 set <F18>=[32~
-map <F15>   G
-imap <F15>  G
-map <F16>   1G
-imap <F16>  1G
+map <F15>   
+imap <F15>  <esc>a
+map <F16>   
+imap <F16>  <esc>a
 map <F17>   
 imap <F17>  
 map <F18>   

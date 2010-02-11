@@ -1,0 +1,319 @@
+#!/bin/sh
+# (c)2008-2010 John Magolske, GPL v3
+# http://b79.net/contact
+# Last edit: 2010/02/11 Thu 10:09 PST
+
+usage="Usage: `basename $0` [ options ] file
+
+  For printing text files while in a Linux framebuffer console. Will
+typset the text as PostScript, preview with fbgs, then provide the
+option to either print the PS file or save it as a PDF in the working
+directory. Works from within a GNU screen session. Capable of handling
+UTF-8 encoded text. The defaults are:
+    * Letter sized paper
+    * 10 pt Inconsolata font
+    * Footer: filename, time & date printed, page number
+    * left, right and top margins: 72 points
+    * bottom margin: 42 pts to bottom of footer, 96 pts to body text
+
+Options:
+
+-F FOOT     Select an alternate footer style, where FOOT may be one of
+            the following numbers:
+            0   print no footer (78 pt bottom margin)
+            1   print page number only in center of page
+            2   print file name and page number
+-H HEAD     Print a header instead of a footer, where HEAD is text that
+            will be be appended before the page number in the upper-right
+            corner of the page. Underscores in HEAD text will be converted
+            to spaces. If HEAD is given a value of \"1\", the page number
+            alone will be printed.
+-l PTS      Adjust the left margin. The default value of PTS is 60 points 
+            which provides a 72 pt. margin. Seems to be a 12 pt offset...
+            same applies for right margin. Top & bottom get more complicated
+            with the headers...hope to clarify this in a future rev.)
+-r PTS      Adjust the right margin in PTS points
+-t PTS      Adjust the top margin in PTS points
+-b PTS      Adjust the bottom margin in PTS points
+-f SIZE     Set the font size of body text to SIZE (points)
+-k SIZE     Set the font size of header/footer text to SIZE (points)
+-p PAGE     Set paper size to PAGE. Allowed values are:
+            Letter, Legal, A3, A4, A5
+-s SKIP     Adjust line spacing, where SKIP is a numerical value in points
+            that adds or subtracts (if negative) to spacing between lines.
+            Default is a 1 pt skip, so -s 0 will slightly reduce spacing
+-d          Double-spaced printing where an input file with blank lines
+            will output no more than one blank line between lines of text.
+-M TEXT     Manuscript format: print 12-point double-spaced text with a
+            header, equivilant to -d -f12 -k12 -H HEAD where TEXT = HEAD
+-a NUM      Specify which pages to print using the following format:
+            b-e     print from page b to e
+            -e      print from 0 to page e
+            b-      print from page b to end
+            n       print page n
+            odd     print odd pages
+            even    print even pages
+-h          View this help text through the less pager.
+
+
+Dependencies: enscript, fbgs, recode, lpr and the Inconsolata font.
+
+  Inconsolata is a very readable monospaced font. You can change this script
+to use a different font, but Inconsolata is quite nice. And it's free -- give
+it a try! OpenType, pfa, and FontForge source files are here:
+
+    http://www.levien.com/type/myfonts/inconsolata.html
+
+Generate afm and pfb files from the otf file with the ttf2pt1 utility:
+
+    ttf2pt1 Inconsolata.otf Inconsolata
+    ttf2pt1 -b Inconsolata.otf
+
+Copy Inconsolata.afm to /usr/share/enscript/afm/incon.afm
+and add this line to /usr/share/enscript/afm/font.map :
+
+    Inconsolata                 incon
+
+Copy the afm & pfb files into the appropriate directory, for example:
+
+    /usr/share/fonts/default/Type1/ ...well, not there anymore,
+    but here:  /usr/share/fonts/type1/gsfonts/
+
+  This script requires a \$HOME/.enscript directory; create one if it
+doesn't exist. You will also need sudo privledges for the openvt command.
+Using visudo, add a line something like this to /etc/sudoers :
+
+    username    ALL=NOPASSWD:   /usr/bin/openvt -sw -- fbgs *
+
+  For more info see:  enscript(1), fbgs(1), recode(1), lpr(1)
+Also, read the comments in the script."
+
+while getopts F:H:l:r:t:b:f:k:p:s:dM:a:h option
+do
+        case "$option"
+                in
+                F) footer="$OPTARG";;
+                H) header="$OPTARG";;
+                l) lm="$OPTARG";;
+                r) rm="$OPTARG";;
+                t) tm="$OPTARG";;
+                b) bm="$OPTARG";;
+                f) bodyfnt="$OPTARG";;
+                k) headfnt="$OPTARG";;
+                p) pgsize="$OPTARG";;
+                s) spacing="$OPTARG";;
+                d) doublespace="yes";;
+                M) manutitle="$OPTARG";;
+                a) pagenum="$OPTARG";;
+                h) echo "$usage" | less && exit 0;;
+                \?) echo "type `basename $0` by itself for usage notes" ; exit 1;;
+        esac
+done
+
+[ "$#" -eq 0 ] && echo "$usage" | less && exit 0
+
+shift `expr $OPTIND - 1`
+
+[ "$#" -eq 0 ] &&\
+echo "Error: you used an option that requires an argument" && exit 0
+
+[ "$footer" != "" -a "$header" != "" ] &&\
+echo "Error: cannot select both header and footer options together" && exit 0
+
+[ "$pgsize" = "" ] && pgsize="Letter"   # set default paper size
+[ "$bodyfnt" = "" ] && bodyfnt="10"     # set default font size for body text
+[ "$headfnt" = "" ] && headfnt="9"      # set default font size for header & footer text
+
+# set the margin defaults
+[ "$lm" = "" ] && lm="60"
+[ "$rm" = "" ] && rm="60"
+[ "$tm" = "" ] && tm="60"
+[ "$bm" = "" ] && bm="46"
+
+# set fonts, line spacing, and title text for the -M manuscript option
+[ "$manutitle" != "" ] && headfnt="12" bodyfnt="12" doublespace="yes" header="$manutitle" tm="78" bm="72"
+
+[ "$header" != "" ] && headertext=`echo "$header" | sed 's/_/ /g'`
+
+marg="--margins=$lm:$rm:$tm:$bm"
+
+[ "$spacing" != "" ] && skip="-s $spacing"
+
+if
+    file $1 | grep UTF-8 > /dev/null
+then  # convert UTF-8 (enscript can't handle UTF-8)
+    if [ "$doublespace" = "yes" ]
+    then
+        cat $1 | sed '/^$/d;G' | recode UTF-8..Latin-1 > /tmp/$1
+    else
+        cat $1 | recode UTF-8..Latin-1 > /tmp/$1
+    fi
+else
+    if [ "$doublespace" = "yes" ]
+    then
+        cat $1 | sed '/^$/d;G' > /tmp/$1
+    else
+        cat $1 > /tmp/$1
+    fi
+fi
+
+## Generate a custom hdr files for generating header or footer
+##
+# header with page/page_total
+[ "$header" != "" -a "$header" = "1" ] &&\
+echo "% -- code follows this line --
+%Format: upperpagestr $%/$=
+%HeaderHeight: 0
+% Fonts.
+/Inconsolata /inconsolata-encoded MF
+/SmallFont /inconsolata-encoded findfont $headfnt scalefont def
+/marg 5 def
+/do_header {	% print header_file_page footer
+  gsave
+    % upperpagestr
+    SmallFont setfont
+    d_header_x d_header_w add upperpagestr stringwidth pop sub
+    marg sub
+    d_header_y 12 add moveto upperpagestr show
+  grestore
+} def" | recode UTF-8..Latin-1 > $HOME/.enscript/txp_custom.hdr
+##
+# header with text (input after the -H option) and page#
+[ "$header" != "" -a "$header" != "1" -o "$manutitle" != "" ] &&\
+echo "% -- code follows this line --
+%Format: upperpagestr $headertext / $%
+%HeaderHeight: 0
+% Fonts.
+/Inconsolata /inconsolata-encoded MF
+/SmallFont /inconsolata-encoded findfont $headfnt scalefont def
+/marg 5 def
+/do_header {	% print header_file_page footer
+  gsave
+    % upperpagestr
+    SmallFont setfont
+    d_header_x d_header_w add upperpagestr stringwidth pop sub
+    marg sub
+    d_header_y 24 add moveto upperpagestr show
+  grestore
+} def" | recode UTF-8..Latin-1 > $HOME/.enscript/txp_custom.hdr
+#
+# Footer with filename, date printed, and page/pagetotal
+[ "$footer" = "" -a "$header" = "" -a "$manutitle" = "" ] &&\
+echo "% -- code follows this line --
+%Format: filestr    \$n
+%Format: datestr    %D{%T %Z %F} 
+%Format: lowerpagestr	$%/$=
+%HeaderHeight: 0
+%FooterHeight: 38
+% Fonts.
+/Inconsolata /inconsolata-encoded MF
+/InconsFont /inconsolata-encoded findfont $headfnt scalefont def
+/marg 5 def
+/do_header {	% print footer_file_page footer
+  gsave
+    % filename (without path) in footer
+    InconsFont setfont
+    d_footer_x marg add d_footer_y moveto filestr show
+    % current date in footer
+    InconsFont setfont
+    d_footer_x d_footer_w 2 div add datestr stringwidth pop 2 div sub
+    d_footer_y moveto datestr show
+    % lowerpagestr
+    InconsFont setfont
+    d_footer_x d_footer_w add lowerpagestr stringwidth pop sub
+    marg sub
+    d_footer_y moveto lowerpagestr show
+  grestore
+} def" | recode UTF-8..Latin-1 > $HOME/.enscript/txp_custom.hdr
+#
+# no footer or header
+[ "$footer" = "0" ] &&\
+echo "% -- code follows this line --
+%FooterHeight: 24
+%HeaderHeight: 0
+/do_header {	% null footer
+  gsave
+  grestore
+} def" | recode UTF-8..Latin-1 > $HOME/.enscript/txp_custom.hdr
+#
+# footer with page/pagetotal in center of page
+[ "$footer" = "1" ] &&\
+echo "% -- code follows this line --
+%Format: lowerpagestr	$% of $=
+%HeaderHeight: 0
+%FooterHeight: 38
+% Fonts.
+/Inconsolata /inconsolata-encoded MF
+/SmallFont /inconsolata-encoded findfont $headfnt scalefont def
+/marg 5 def
+/do_header {	% print footer_file_page footer
+  gsave
+    % current date in footer
+    SmallFont setfont
+    d_footer_x d_footer_w 2 div add lowerpagestr stringwidth pop 2 div sub
+    d_footer_y moveto lowerpagestr show
+  grestore
+} def" | recode UTF-8..Latin-1 > $HOME/.enscript/txp_custom.hdr
+#
+# footer with file name and page/pagetotal
+[ "$footer" = "2" ] &&\
+echo "% -- code follows this line --
+%Format: filestr \$n
+%Format: lowerpagestr $%/$=
+%HeaderHeight: 0
+%FooterHeight: 38
+% Fonts.
+/Inconsolata /inconsolata-encoded MF
+/SmallFont /inconsolata-encoded findfont $headfnt scalefont def
+/marg 5 def
+/do_header {	% print footer_file_page footer
+  gsave
+    % filename (without path) in footer
+    SmallFont setfont
+    d_footer_x marg add d_footer_y moveto filestr show
+    % lowerpagestr
+    SmallFont setfont
+    d_footer_x d_footer_w add lowerpagestr stringwidth pop sub
+    marg sub
+    d_footer_y moveto lowerpagestr show
+  grestore
+} def" | recode UTF-8..Latin-1 > $HOME/.enscript/txp_custom.hdr
+
+headfoot="--fancy-header=txp_custom"
+
+[ "$pagenum" != "" ] && pn="-a $pagenum"
+
+# convert the text to postscript
+enscript --word-wrap "$pn" "$marg" "$headfoot" "$skip" --media="$pgsize" -f Inconsolata$bodyfnt -o /tmp/${1%%.*}.ps /tmp/$1
+
+# preview the postscript file graphically
+sudo openvt -sw -- fbgs -xxl -a /tmp/${1%%.*}.ps
+sudo deallocvt
+
+    echo -e "
+        Print ${1%%.*}.ps ?
+   -->  'p' + 'ENTER'
+
+        Save as ${1%%.*}.pdf in `pwd` ?
+   -->  's' + 'ENTER'
+
+        Save as ${1%%.*}.ps in `pwd` ?
+   -->  'S' + 'ENTER'
+
+        To cancel just press
+   -->  'ENTER'
+        "
+read answer
+
+# printing requires 'cups'. Replace 'Brother_HL...' with your printer
+[ "$answer" = "p" ] && lpr -P Brother_HL-1450_series_USB_1 /tmp/${1%%.*}.ps && exit 0
+
+# save as a PDF file in the working directory
+[ "$answer" = "s" ] && ps2pdf /tmp/${1%%.*}.ps ${1%%.*}.pdf && exit 0
+
+# save as a PS file in the working directory
+[ "$answer" = "S" ] && cp /tmp/${1%%.*}.ps . && exit 0
+
+# or just exit after previewing
+[ "$answer" = "" ] && exit 0
+

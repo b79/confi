@@ -317,9 +317,8 @@ set completeopt+=longest        " do not select the first variant by default
 
 " SuperTab settings
 " Requires: supertab.vim (script)
-let g:SuperTabDefaultCompletionType = "<c-x><c-n>"
-" SuperTab -- set default tab completion key to be <leader><space> & allow the
-" ability to toggle between that sequence and simply using the <tab> key:
+" Set default tab completion key to be <leader><space> and allow the ability
+" to toggle between that sequence and simply using the <tab> key:
 let SuperTabMappingForward = '<leader><space>'
 let g:SuperTab_tab = 0
 function! ToggleSuperTabMap()
@@ -340,30 +339,31 @@ endfunction
 map <leader><tab> :call ToggleSuperTabMap()<CR>
 imap <leader><tab> <esc>:call ToggleSuperTabMap()<CR>a
 
-map <leader>xh :SuperTabHelp<CR>
-imap <leader>xh <esc>:SuperTabHelp<CR>a
+" default completion type
+let g:SuperTabDefaultCompletionType = "<c-x><c-n>"
+
+" completion type is saved for the duration of your vim session or until
+" you enter a different completion mode.
+let g:SuperTabRetainCompletionDuration = "session"
+
+" Alternate completion modes:
+" n=file, k=dictionary, l=whole-lines, ]=tags f=file-names o=omni
 imap <leader>xn <c-x><c-n>
 imap <leader>xk <c-x><c-k>
 imap <leader>xl <c-x><c-l>
 imap <leader>x] <c-x><c-]>
 imap <leader>xf <c-x><c-f>
 imap <leader>xo <c-x><c-o>
+map <leader>xh :SuperTabHelp<CR>
+imap <leader>xh <esc>:SuperTabHelp<CR>a
 
-"let g:SuperTab_tab = 0
-"function! ToggleSuperTabMap()
-    "let g:SuperTabMappingForward = g:SuperTab_tab ? '<tab>' : '<leader><space>'
-    "let g:SuperTab_tab = !g:SuperTab_tab
-    "exec 'imap ' . g:SuperTabMappingForward . ' <c-n>'
-"endfunction
-"map <silent> <F3> :call ToggleSuperTabMap()<CR>
-
-
-" Word completion dictionary
-"set complete+=.         " current buffer
-"set complete+=k         " dictionary
-"set complete+=b         " other bufs
-"set complete+=t         " tags
-
+let g:SuperTab_tab = 0
+function! ToggleSuperTabMap()
+    let g:SuperTabMappingForward = g:SuperTab_tab ? '<tab>' : '<leader><space>'
+    let g:SuperTab_tab = !g:SuperTab_tab
+    exec 'imap ' . g:SuperTabMappingForward . ' <c-n>'
+endfunction
+map <silent> <F3> :call ToggleSuperTabMap()<CR>
 
 " use syntax highlighting defs to enable Omni-Completion after any
 " :filetype command using best available method
@@ -374,48 +374,6 @@ if has("autocmd") && exists("+omnifunc")
     \     setlocal omnifunc=syntaxcomplete#Complete |
     \   endif
 endif
-
-" Autoclose preview after menu hides
-"autocmd CursorMovedI * if pumvisible() == 0|pclose|endif
-"autocmd InsertLeave * if pumvisible() == 0|pclose|endif
-
-" Wahat does this do? Is it useful to me?:
-"imap <expr> <Tab> pumvisible() ? "<Tab>" : "<Tab><Down>"
-
-
-" toggle tab completion - modify this to suit...
-" http://vim.wikia.com/wiki/Smart_mapping_for_tab_completion
-"function! TabCompletion()
-  "if mapcheck("\<tab>", "i") != ""
-    ":iunmap <tab>
-    ":iunmap <s-tab>
-    ":iunmap <c-tab>
-    "echo "tab completion off"
-  "else
-    ":imap <tab> <c-n>
-    ":imap <s-tab> <c-p>
-    ":imap <c-tab> <c-x><c-l>
-    "echo "tab completion on"
-  "endif
-"endfunction
-"map <Leader>tc :call TabCompletion()<CR>
-
-
-" oh...here's another toggle function:
-" http://jayjohnston.com/linux/vim-toggle-indent-function.html
-"function! ToggleIndent()
-     "if g:indent_on == 1
-         ":set nocindent noai
-         "let g:indent_on = 0
-         "echo "autoindent off"
-     "else
-         ":set cindent ai
-         "let g:indent_on = 1
-         "echo "autoindent on"
-     "endif
-"endfunction
-
-"let g:indent_on = 1
 
 
 " -------- Dictionaries ------------------------------------------------
@@ -737,8 +695,21 @@ cmap <leader>Y %s/^¥¥*/*/g<cr>
 command Cs %s/[.!?]\_s\+\a/\U&\E/g
 " uppercase first letter of sentences in visually selected text
 vmap cs :s/[.!?]\_s\+\a/\U&\E/g<CR>
-" Title case visually selected text
-vmap ct :s/\<\(.\)\(\k*\)\>/\u\1\L\2/g<CR>
+
+" visually select text then press ~ to convert to UPPER CASE, then lower case,
+" then Title Case... Keep pressing ~ until you get the case you want.
+" http://vim.wikia.com/wiki/Switching_case_of_characters
+function! TwiddleCase(str)
+  if a:str ==# toupper(a:str)
+    let result = tolower(a:str)
+  elseif a:str ==# tolower(a:str)
+    let result = substitute(a:str,'\(\<\w\+\>\)', '\u\1', 'g')
+  else
+    let result = toupper(a:str)
+  endif
+  return result
+endfunction
+vnoremap ~ ygv"=TwiddleCase(@")<CR>Pgv
 
 " process with wcalc -- position cursor immediately (or some number of spaces)
 " after the end of the formula in insert mode, <leader>= will output solution
@@ -809,19 +780,9 @@ imap <leader>od <esc>:!open -a dillo "%"<CR><Enter>a
 " Firefox (Linux+X)
 map  <leader>of :!open -a firefox "%"<CR><Enter>
 imap <leader>of <esc>:!open -a firefox "%"<CR><Enter>a
-" Camino (Mac)
-map  <leader>oc :!open -a /Applications/Camino.app "%"<CR><Enter>
-imap <leader>oc <esc>:!open -a /Applications/Camino.app "%"<CR><Enter>a
 " Safari (Mac)
 map  <leader>os :!open -a /Applications/Safari.app "%"<CR><Enter>
 imap <leader>os <esc>:!open -a /Applications/Safari.app "%"<CR><Enter>a
-" Firefox (Mac)
-"map  <leader>bf :!open -a /Applications/Firefox.app "%"<CR><Enter>
-"imap <leader>bf <esc>:!open -a /Applications/Firefox.app "%"<CR><Enter>a
-
-" trying to get this to work with the youtube script I wrote, but having
-" problems with filename expansion...
-"map <leader>U :!echo '<cWORD>'<CR>
 
 
 " ---- Keyboard Remappings ---------------------------------------------
@@ -1072,5 +1033,4 @@ augroup END
 " remember folds after quitting
 autocmd BufWinLeave *.* mkview
 autocmd BufWinEnter *.* silent loadview
-
 

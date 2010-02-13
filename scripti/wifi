@@ -1,0 +1,78 @@
+#!/bin/bash
+# (c)2008-2010 John Magolske, GPL v3
+# Last edit: 2010/02/12 Fri 22:46 PST
+
+usage="Usage: `basename $0` [0] [\"essid\"] [password]
+  A command line interface for bringing up wifi connections.
+Written for use on the XO laptop, but probably useful for other
+machines as well. An essid containing spaces must be quoted.
+The optional password is for use with wep protected connections.
+An argument of \"0\" will shut down the radio altogether.
+"
+
+if [ "$#" -eq 0 ]
+then
+        echo "$usage"
+        exit 0
+fi
+
+# the argument 0 turns off the radio
+if [ "$1" = "0" ]
+then
+    if sudo iwconfig eth1 | grep "radio off" > /dev/null
+    then
+        echo " ... the wifi radio is already off."
+        exit 0
+    else
+        sudo iwconfig eth1 txpower off
+        sudo /sbin/dhclient -r &> /dev/null
+        echo " ... turned the wifi radio off"
+        exit 0
+    fi
+
+# argument 1 reloads ipw2200 (neccesary after waking my X40 from suspend to RAM)
+elif [ "$1" = "1" ]
+then
+    echo -n "  removing & reloading the ipw2200 module ... "
+    sudo rmmod ipw2200
+    sudo modprobe ipw2200
+    echo "done (and the radio is now on) "
+    exit 0
+else
+    essid=$1
+fi
+
+[ "$2" != "" ] && wepkey="key $2"
+
+# turn off dhcp in case it happens to be on
+sudo /sbin/dhclient -r &> /dev/null
+
+# load the wifi module (ipw2200) if it's not loaded
+if
+    lsmod | grep ipw2200 > /dev/null
+then
+    :
+else
+    sudo modprobe ipw2200
+fi
+
+# make sure the radio is on
+sudo iwconfig eth1 txpower on
+
+# connect to wireless (with optional wep password)
+echo -n "attempting to associate with $essid ... "
+sudo iwconfig eth1 essid "$essid" $wepkey
+
+sleep 5     #let connection settle
+
+if
+    iwconfig eth1 | grep eth1.*unassociated > /dev/null
+then
+    echo "failed to associate with $essid"
+    sudo iwconfig eth1 txpower off
+    exit 0
+else
+    echo -e "dhclient running:\n"
+    sudo /sbin/dhclient -1 eth1
+fi
+

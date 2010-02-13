@@ -1,0 +1,594 @@
+-------------------------------------
+  V i m  --  Commonly Used commands
+-------------------------------------
+
+:h index.txt for all commands
+
+First & Last position on a line
+    0 or ^      &       $
+
+Back & Forward one screen
+    Ctrl-B  Ctrl-F
+
+Last line of the file, 17th line of the file, etc.
+    G   17G
+
+Help - cycle through all instances of a given topic
+    :h <sometopic>Ctrl-D
+
+(then do completion / copy'n-paste the topic you're searching, or cycle
+ through all the topics with repeated <TABS> ... Tip #229)
+
+Search the help files with grep
+    :helpg
+
+Find word under cursor, forwards / backwards
+    *
+    #
+
+What * picks up depends upon:
+    :h iskeyword
+    isfname
+
+toggle between current and last cursor position
+    ''
+    ``
+
+insert previous search string in insert mode or at command line (:h i_CTRL-R):
+    C-r /
+
+or insert the contents of one of these registers:    
+    '"'     the unnamed register, containing the text of
+            the last delete or yank
+    '%'     the current file name
+    '#'     the alternate file name
+    '*'     the clipboard contents (X11: primary selection)
+    '+'     the clipboard contents
+    '/'     the last search pattern
+    ':'     the last command-line
+    '.'     the last inserted text
+    '-'     the last small (less than a line) delete
+    '='     the expression register: you are prompted to
+            enter an expression (see |expression|)
+
+xp  reverse next two characters
+dL  delete to end of page, in other words, everything visible.
+C   chop off end of line and go into insert mode.
+
+Commands in insert mode:
+    Ctrl-W: delete a word backwards
+    Ctrl-K: insert a digraph (see :dig)
+    Ct-P/N: autocompletion
+    
+To find more, try:
+    :help i_CTRL-
+
+Open multiple files for editing:
+    :args file1 file2 file-with-wildcard*
+
+Match brackets & tags
+    %
+
+The matchit plugin extends the functionality of this feature a lot.
+For example, to select everything between two html tags:
+    va%
+
+Omnicompletion
+    <c-x><c-o>
+
+Spell -- mappings start spellchecking in English, Spanish, & stop spellchecking:
+    se      ss      ns
+to suggest spellings for mispelled words:
+    z=
+next, previous misspelled word
+    ]s or ]S        [s or [S
+
+Call dictionaries eng/spa, spa/eng, eng/spa, eng/lat, lat/eng, or all 
+installed dictionaries; <leader><space> + one of the following:
+    es  se  e2  E2  s2  S2  el  le  d
+
+Folding
+    zo      opens a fold
+    zc      closes a fold
+
+Tabs
+    :tabe <file>    open file in a new tab
+    :tabc           close current tab
+
+Count words in text file
+    g<C-g>
+
+Replace a word (with cursor anywhere in the word, see :h text-objects),
+not including the surrounding spaces or punctuation:
+    ciw (change inner word)
+including the spaces on one side:
+    caw (change a word) 
+
+yank a word at current cursor position
+    map <> mzlb"ayw`z
+
+don't redraw screen while executing macros, registers and other commands 
+that have not been typed.  Also, updating the window title is postponed:
+    lazyredraw   lz
+
+jump to exact spot of last modificaiton
+    `.
+
+jump back to previous visual selection
+    gv
+
+Save current file as "file-xyz.txt" and move to "file-xyz.txt"
+    :sav file-xyz.txt
+
+Change readonly [RO] file to be read/write
+    :noro
+
+Delete a buffer, force-delete a buffer
+    :bd     :bd!
+
+Delete a buffer without closing window
+    :bn<CR>:bw#<CR>
+    <leader>b-      (mapping for the above)
+
+Delete all buffers except the current/named buffer (BufOnly.vim plugin)
+    :Bonly  :Bufonly    :BufOnly
+
+Close buffer, force-close buffer
+    :bw
+    :bw!
+
+Close a window without deleting buffer
+    :close
+    <leader>w-      (mapping for the above)
+
+Close all windows except for the current one
+    :only
+
+Search & Replace -- search entire file (%) for every instance of [Õ] & replace with [']
+    :% s/Õ/'/g
+
+Replace tabs with spaces 
+    :retab
+    :retab!
+
+Synchronized scrolling -- all windows with this setting will scroll together
+    :set scrollbind
+Turn off scrollbind:
+    :set noscb
+
+UPPERCASE, lowercase selected text
+    gU
+    gu
+
+Format line lengths
+    <leader>qq          formats paragraph to 79 chars max line length, with par
+    <leader>q<space>    par + add your own arguments
+    <leader>q8          set lines to be broken after 79 chars
+    <leader>q7 (69 chars), q6 (59 chars), q5 (49 chars) and q0 (not broken)
+
+Formatting text:
+(vim@vim.org, Re: Text wrapping / reflowing - two questions)
+Yep.  See
+    :help gq
+    :help 25.1
+You can easily reformat the paragraph the cursor is currently in by 
+typing this in normal mode:
+    gqip
+have vim automatically reflow your text as you type:
+    set fo+=aw
+Do you have these set?
+    setlocal formatoptions+=bcroqan2t	" better without w
+    setlocal linebreak
+
+commenting out lines
+with visual-block, select the lines (or just the beginning of the lines) you
+want to comment out, press I, and type the comment leader. It will only show up
+on the first line while you type, but when you hit <esc> to exit insert mode
+the insertion will be applied to every line.
+
+
+commenting -- continue onto next line:
+    :set fo=r
+or to turn it off:
+    :set fo-=r
+see:
+    :help 'formatoptions'
+    :help fo-table
+
+reload automatically when a file changes (like a test log):
+    :set autoread           or      :set ar     (sets globally)
+    :setlocal autoread      or      :setl ar    (just local buffer)
+
+Handy references:
+    :h option-list
+    :h quickref
+
+
+**** Plugins ****
+
+NERD commenter -- commenting operations and styles invoked via key mappings 
+    ,c<space>  Toggles the comment state of the selected line(s), etc.
+    :Nerd (mapped to :help NERDCommenter)
+
+Diff a directory recursively and enable easy merging, copying and
+deleting of files and directories:
+    :DirDiff
+
+Zoom into and out of a window (ZoomWin):
+    :Ctrl-W o (also mapped to <leader>W)
+
+Browse to a url using the browser.vim plugin:
+    :WebBrowser (mapped to <leader>ww)
+
+VtreeExplorer
+    :VTreeExplore (mapped to :Vt)
+    <leader>f
+
+netrw file browser:
+    vim .
+Then press 'i' several times to cycle the display between four listing styles.
+
+
+View & open most recently used files -- mru.vim plugin
+    :MRU (mapped to :Mr)
+        <CR>    opens the file
+        o       opens the file in a new window
+        u       updates the file list (useful if MRU window is left open)
+        q       closes the MRU window
+    :MRUedit <file>     edit a file in the MRU list
+
+NERD_tree
+    :NERDTree
+       o        open file in the previous window, expand/collapse directory
+       <tab>    open file in a new split window
+       x        close directory cursor is inside
+
+SynMark - Plugin, provides commands for defining highlighting at fixed locations (marks) in the text.
+    :vmap <> :SynMark Emph<CR>
+ 
+http://www.vim.org/scripts/script.php?script_id=1128
+
+(colorscheme editor)
+    :h hicolors
+
+view a man page
+    K (shift-k) while placing cursor on the name of the command. To open a
+    particular section, precede with a number; 3K ls will open ls(3)
+    To always show every matching man page, set keywordprg to "man -a"
+
+Generate help tags file after installing a plugin, so its help is available:
+    :helptags ~/.vim/doc
+
+install a vimball (requires the vimball plugin)
+    vim someplugin.vba(.gz)
+    :so %
+    :q
+
+Preview contents of a vimball archive:
+    :VimballList
+
+
+
+**** Mappings / external programs ****
+
+close the most recent open tag (for eg html editing) w/ closetag.vim:
+    <c-_>
+
+xml.vim   (:help xml-plugin)
+    <LocalLeader>x   Place a custom XML tag to suround the selected text
+    <LocalLeader>5   or   <LocalLeader>%  Normal or Visual, Jump to the begining or end tag
+
+previous buffer, next buffer
+    <leader><Up>
+    <leader><Down>
+
+previous window, next window
+    <leader><space>
+    <leader><Return> ("Enter" key)
+
+Increase / Decrease window height
+    Ctrl-k
+    Ctrl-j
+Increase / Decrease window width
+    Ctrl-l
+    Ctrl-h
+
+break lines at 80, 70, 63 columns, or don't break lines 
+    :T8
+    :T7
+    :T6
+    :T0
+
+Reformat paragraph, filter through par
+    <leader>qq  at 80 columns
+    <leader>q7  at 70 columns
+    <leader>q6  at 63 columns
+
+Title Case for visually selected text
+    ct
+
+Sentence Case for entire file, or for visually selected text
+    cs
+
+The color syntax files are here:
+    /usr/share/vim/vim70/syntax/
+
+detection of filetype (for syntax coloring) is set here:
+    ~/.vim/filetype.vim
+
+Manually set the filetype (in these examples, to rst):
+    :setf rst
+    :set ft=rst
+
+To see the current status
+    :filetype
+(will output something like: filetype detection:ON  plugin:ON  indent:OFF)
+
+If a file is not picking up on a filetype, detect the file type again:
+    :filetype detect
+
+break undo sequence, start new change   :help i_CTRL-G_u
+    CTRL-G u
+
+
+MAPPING AND MODES
+    commands:				                    modes:
+                                            Normal      Visual          Operator-pending
+:map   :noremap   :unmap   :mapclear        yes	        yes	            yes
+:nmap  :nnoremap  :nunmap  :nmapclear       yes		    -               -
+:vmap  :vnoremap  :vunmap  :vmapclear	    -           yes             -
+:omap  :onoremap  :ounmap  :omapclear	    -           -               yes
+
+                                            Visual      Select ~
+:vmap  :vnoremap  :vunmap  :vmapclear	    yes         yes
+:xmap  :xnoremap  :xunmap  :xmapclear	    yes         -
+:smap  :snoremap  :sunmap  :smapclear	    -	        yes
+
+                                            Insert      Command-line	Lang-Arg
+:map!  :noremap!  :unmap!  :mapclear!	    yes	        yes             -
+:imap  :inoremap  :iunmap  :imapclear	    yes         -               -
+:cmap  :cnoremap  :cunmap  :cmapclear	    -	        yes             -
+:lmap  :lnoremap  :lunmap  :lmapclear	    yes*        yes*            yes*
+
+----
+
+Set file encoding to UTF-16:
+
+    :set fenc=utf-16
+
+
+Input a character using it's hex number:
+
+    Ctrl-V u <hexnumber> <Return>
+
+For example, 
+
+    Ctrl-V u f0 <Return>  will output this: ð
+    Ctrl-V u 2122 <Return>  will output this: ™
+
+
+
+Digraphs
+
+press Ctrl-K <car1><car2>
+where char2 is one of the following:
+
+char name               char    meaning ~
+Exclamation mark        !       Grave
+Apostrophe              '       Acute accent
+Greater-Than sign       >       Circumflex accent
+Question Mark           ?       tilde
+Hyphen-Minus            -       Macron
+Left parenthesis        (       Breve
+Full Stop               .       Dot Above
+Colon                   :       Diaeresis
+Comma                   ,       Cedilla
+Underline               _       Underline
+Solidus                 /       Stroke
+Quotation mark          "       Double acute accent
+Semicolon               ;       Ogonek
+Less-Than sign          <       Caron
+Zero                    0       Ring above
+Two                     2       Hook
+Nine                    9       Horn
+
+Equals                  =       Cyrillic
+Asterisk                *       Greek
+Percent sign            %       Greek/Cyrillic special
+Plus                    +       smalls: Arabic, capitals: Hebrew
+Three                   3       some Latin/Greek/Cyrillic letters
+Four                    4       Bopomofo
+Five                    5       Hiragana
+Six                     6       Katakana
+
+ie: n?  --->   ñ
+
+More:
+
+char  digraph	hex	dec	official name ~
+^@	NU	0x00	  0	NULL (NUL)
+^A	SH	0x01	  1	START OF HEADING (SOH)
+^B	SX	0x02	  2	START OF TEXT (STX)
+^C	EX	0x03	  3	END OF TEXT (ETX)
+^D	ET	0x04	  4	END OF TRANSMISSION (EOT)
+^E	EQ	0x05	  5	ENQUIRY (ENQ)
+^F	AK	0x06	  6	ACKNOWLEDGE (ACK)
+^G	BL	0x07	  7	BELL (BEL)
+^H	BS	0x08	  8	BACKSPACE (BS)
+^I	HT	0x09	  9	CHARACTER TABULATION (HT)
+^@	LF	0x0a	 10	LINE FEED (LF)
+^K	VT	0x0b	 11	LINE TABULATION (VT)
+^L	FF	0x0c	 12	FORM FEED (FF)
+^M	CR	0x0d	 13	CARRIAGE RETURN (CR)
+^N	SO	0x0e	 14	SHIFT OUT (SO)
+^O	SI	0x0f	 15	SHIFT IN (SI)
+^P	DL	0x10	 16	DATALINK ESCAPE (DLE)
+^Q	D1	0x11	 17	DEVICE CONTROL ONE (DC1)
+^R	D2	0x12	 18	DEVICE CONTROL TWO (DC2)
+^S	D3	0x13	 19	DEVICE CONTROL THREE (DC3)
+^T	D4	0x14	 20	DEVICE CONTROL FOUR (DC4)
+^U	NK	0x15	 21	NEGATIVE ACKNOWLEDGE (NAK)
+^V	SY	0x16	 22	SYNCHRONOUS IDLE (SYN)
+^W	EB	0x17	 23	END OF TRANSMISSION BLOCK (ETB)
+^X	CN	0x18	 24	CANCEL (CAN)
+^Y	EM	0x19	 25	END OF MEDIUM (EM)
+^Z	SB	0x1a	 26	SUBSTITUTE (SUB)
+^[	EC	0x1b	 27	ESCAPE (ESC)
+^\	FS	0x1c	 28	FILE SEPARATOR (IS4)
+^]	GS	0x1d	 29	GROUP SEPARATOR (IS3)
+^^	RS	0x1e	 30	RECORD SEPARATOR (IS2)
+^_	US	0x1f	 31	UNIT SEPARATOR (IS1)
+	SP	0x20	 32	SPACE
+#	Nb	0x23	 35	NUMBER SIGN
+$	DO	0x24	 36	DOLLAR SIGN
+@	At	0x40	 64	COMMERCIAL AT
+[	<(	0x5b	 91	LEFT SQUARE BRACKET
+\	//	0x5c	 92	REVERSE SOLIDUS
+]	)>	0x5d	 93	RIGHT SQUARE BRACKET
+^	'>	0x5e	 94	CIRCUMFLEX ACCENT
+`	'!	0x60	 96	GRAVE ACCENT
+{	(!	0x7b	123	LEFT CURLY BRACKET
+|	!!	0x7c	124	VERTICAL LINE
+}	!)	0x7d	125	RIGHT CURLY BRACKET
+~	'?	0x7e	126	TILDE
+^?	DT	0x7f	127	DELETE (DEL)
+~@	PA	0x80	128	PADDING CHARACTER (PAD)
+~A	HO	0x81	129	HIGH OCTET PRESET (HOP)
+~B	BH	0x82	130	BREAK PERMITTED HERE (BPH)
+~C	NH	0x83	131	NO BREAK HERE (NBH)
+~D	IN	0x84	132	INDEX (IND)
+~E	NL	0x85	133	NEXT LINE (NEL)
+~F	SA	0x86	134	START OF SELECTED AREA (SSA)
+~G	ES	0x87	135	END OF SELECTED AREA (ESA)
+~H	HS	0x88	136	CHARACTER TABULATION SET (HTS)
+~I	HJ	0x89	137	CHARACTER TABULATION WITH JUSTIFICATION (HTJ)
+~J	VS	0x8a	138	LINE TABULATION SET (VTS)
+~K	PD	0x8b	139	PARTIAL LINE FORWARD (PLD)
+~L	PU	0x8c	140	PARTIAL LINE BACKWARD (PLU)
+~M	RI	0x8d	141	REVERSE LINE FEED (RI)
+~N	S2	0x8e	142	SINGLE-SHIFT TWO (SS2)
+~O	S3	0x8f	143	SINGLE-SHIFT THREE (SS3)
+~P	DC	0x90	144	DEVICE CONTROL STRING (DCS)
+~Q	P1	0x91	145	PRIVATE USE ONE (PU1)
+~R	P2	0x92	146	PRIVATE USE TWO (PU2)
+~S	TS	0x93	147	SET TRANSMIT STATE (STS)
+~T	CC	0x94	148	CANCEL CHARACTER (CCH)
+~U	MW	0x95	149	MESSAGE WAITING (MW)
+~V	SG	0x96	150	START OF GUARDED AREA (SPA)
+~W	EG	0x97	151	END OF GUARDED AREA (EPA)
+~X	SS	0x98	152	START OF STRING (SOS)
+~Y	GC	0x99	153	SINGLE GRAPHIC CHARACTER INTRODUCER (SGCI)
+~Z	SC	0x9a	154	SINGLE CHARACTER INTRODUCER (SCI)
+~[	CI	0x9b	155	CONTROL SEQUENCE INTRODUCER (CSI)
+~\	ST	0x9c	156	STRING TERMINATOR (ST)
+~]	OC	0x9d	157	OPERATING SYSTEM COMMAND (OSC)
+~^	PM	0x9e	158	PRIVACY MESSAGE (PM)
+~_	AC	0x9f	159	APPLICATION PROGRAM COMMAND (APC)
+|	NS	0xa0	160	NO-BREAK SPACE
+¡	!I	0xa1	161	INVERTED EXCLAMATION MARK
+¢	Ct	0xa2	162	CENT SIGN
+£	Pd	0xa3	163	POUND SIGN
+¤	Cu	0xa4	164	CURRENCY SIGN
+¥	Ye	0xa5	165	YEN SIGN
+¦	BB	0xa6	166	BROKEN BAR
+§	SE	0xa7	167	SECTION SIGN
+¨	':	0xa8	168	DIAERESIS
+©	Co	0xa9	169	COPYRIGHT SIGN
+ª	-a	0xaa	170	FEMININE ORDINAL INDICATOR
+«	<<	0xab	171	LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
+¬	NO	0xac	172	NOT SIGN
+­	--	0xad	173	SOFT HYPHEN
+®	Rg	0xae	174	REGISTERED SIGN
+¯	'm	0xaf	175	MACRON
+°	DG	0xb0	176	DEGREE SIGN
+±	+-	0xb1	177	PLUS-MINUS SIGN
+²	2S	0xb2	178	SUPERSCRIPT TWO
+³	3S	0xb3	179	SUPERSCRIPT THREE
+´	''	0xb4	180	ACUTE ACCENT
+µ	My	0xb5	181	MICRO SIGN
+¶	PI	0xb6	182	PILCROW SIGN
+·	.M	0xb7	183	MIDDLE DOT
+¸	',	0xb8	184	CEDILLA
+¹	1S	0xb9	185	SUPERSCRIPT ONE
+º	-o	0xba	186	MASCULINE ORDINAL INDICATOR
+»	>>	0xbb	187	RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+¼	14	0xbc	188	VULGAR FRACTION ONE QUARTER
+½	12	0xbd	189	VULGAR FRACTION ONE HALF
+¾	34	0xbe	190	VULGAR FRACTION THREE QUARTERS
+¿	?I	0xbf	191	INVERTED QUESTION MARK
+À	A!	0xc0	192	LATIN CAPITAL LETTER A WITH GRAVE
+Á	A'	0xc1	193	LATIN CAPITAL LETTER A WITH ACUTE
+Â	A>	0xc2	194	LATIN CAPITAL LETTER A WITH CIRCUMFLEX
+Ã	A?	0xc3	195	LATIN CAPITAL LETTER A WITH TILDE
+Ä	A:	0xc4	196	LATIN CAPITAL LETTER A WITH DIAERESIS
+Å	AA	0xc5	197	LATIN CAPITAL LETTER A WITH RING ABOVE
+Æ	AE	0xc6	198	LATIN CAPITAL LETTER AE
+Ç	C,	0xc7	199	LATIN CAPITAL LETTER C WITH CEDILLA
+È	E!	0xc8	200	LATIN CAPITAL LETTER E WITH GRAVE
+É	E'	0xc9	201	LATIN CAPITAL LETTER E WITH ACUTE
+Ê	E>	0xca	202	LATIN CAPITAL LETTER E WITH CIRCUMFLEX
+Ë	E:	0xcb	203	LATIN CAPITAL LETTER E WITH DIAERESIS
+Ì	I!	0xcc	204	LATIN CAPITAL LETTER I WITH GRAVE
+Í	I'	0xcd	205	LATIN CAPITAL LETTER I WITH ACUTE
+Î	I>	0xce	206	LATIN CAPITAL LETTER I WITH CIRCUMFLEX
+Ï	I:	0xcf	207	LATIN CAPITAL LETTER I WITH DIAERESIS
+Ð	D-	0xd0	208	LATIN CAPITAL LETTER ETH (Icelandic)
+Ñ	N?	0xd1	209	LATIN CAPITAL LETTER N WITH TILDE
+Ò	O!	0xd2	210	LATIN CAPITAL LETTER O WITH GRAVE
+Ó	O'	0xd3	211	LATIN CAPITAL LETTER O WITH ACUTE
+Ô	O>	0xd4	212	LATIN CAPITAL LETTER O WITH CIRCUMFLEX
+Õ	O?	0xd5	213	LATIN CAPITAL LETTER O WITH TILDE
+Ö	O:	0xd6	214	LATIN CAPITAL LETTER O WITH DIAERESIS
+×	*X	0xd7	215	MULTIPLICATION SIGN
+Ø	O/	0xd8	216	LATIN CAPITAL LETTER O WITH STROKE
+Ù	U!	0xd9	217	LATIN CAPITAL LETTER U WITH GRAVE
+Ú	U'	0xda	218	LATIN CAPITAL LETTER U WITH ACUTE
+Û	U>	0xdb	219	LATIN CAPITAL LETTER U WITH CIRCUMFLEX
+Ü	U:	0xdc	220	LATIN CAPITAL LETTER U WITH DIAERESIS
+Ý	Y'	0xdd	221	LATIN CAPITAL LETTER Y WITH ACUTE
+Þ	TH	0xde	222	LATIN CAPITAL LETTER THORN (Icelandic)
+ß	ss	0xdf	223	LATIN SMALL LETTER SHARP S (German)
+à	a!	0xe0	224	LATIN SMALL LETTER A WITH GRAVE
+á	a'	0xe1	225	LATIN SMALL LETTER A WITH ACUTE
+â	a>	0xe2	226	LATIN SMALL LETTER A WITH CIRCUMFLEX
+ã	a?	0xe3	227	LATIN SMALL LETTER A WITH TILDE
+ä	a:	0xe4	228	LATIN SMALL LETTER A WITH DIAERESIS
+å	aa	0xe5	229	LATIN SMALL LETTER A WITH RING ABOVE
+æ	ae	0xe6	230	LATIN SMALL LETTER AE
+ç	c,	0xe7	231	LATIN SMALL LETTER C WITH CEDILLA
+è	e!	0xe8	232	LATIN SMALL LETTER E WITH GRAVE
+é	e'	0xe9	233	LATIN SMALL LETTER E WITH ACUTE
+ê	e>	0xea	234	LATIN SMALL LETTER E WITH CIRCUMFLEX
+ë	e:	0xeb	235	LATIN SMALL LETTER E WITH DIAERESIS
+ì	i!	0xec	236	LATIN SMALL LETTER I WITH GRAVE
+í	i'	0xed	237	LATIN SMALL LETTER I WITH ACUTE
+î	i>	0xee	238	LATIN SMALL LETTER I WITH CIRCUMFLEX
+ï	i:	0xef	239	LATIN SMALL LETTER I WITH DIAERESIS
+ð	d-	0xf0	240	LATIN SMALL LETTER ETH (Icelandic)
+ñ	n?	0xf1	241	LATIN SMALL LETTER N WITH TILDE
+ò	o!	0xf2	242	LATIN SMALL LETTER O WITH GRAVE
+ó	o'	0xf3	243	LATIN SMALL LETTER O WITH ACUTE
+ô	o>	0xf4	244	LATIN SMALL LETTER O WITH CIRCUMFLEX
+õ	o?	0xf5	245	LATIN SMALL LETTER O WITH TILDE
+ö	o:	0xf6	246	LATIN SMALL LETTER O WITH DIAERESIS
+÷	-:	0xf7	247	DIVISION SIGN
+ø	o/	0xf8	248	LATIN SMALL LETTER O WITH STROKE
+ù	u!	0xf9	249	LATIN SMALL LETTER U WITH GRAVE
+ú	u'	0xfa	250	LATIN SMALL LETTER U WITH ACUTE
+û	u>	0xfb	251	LATIN SMALL LETTER U WITH CIRCUMFLEX
+ü	u:	0xfc	252	LATIN SMALL LETTER U WITH DIAERESIS
+ý	y'	0xfd	253	LATIN SMALL LETTER Y WITH ACUTE
+þ	th	0xfe	254	LATIN SMALL LETTER THORN (Icelandic)
+ÿ	y:	0xff	255	LATIN SMALL LETTER Y WITH DIAERESIS
+
+
+
+
+
+
+_ _ _ _
+
+
+
+
+

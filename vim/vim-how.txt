@@ -1,30 +1,35 @@
--------------------------------------
-  V i m  --  Commonly Used commands
--------------------------------------
+ V i m  --  Commonly Used commands
+-----------------------------------
 
-:h index.txt for all commands
-
-First & Last position on a line
-    0 or ^      &       $
-
-Back & Forward one screen
-    Ctrl-B  Ctrl-F
-
-Last line of the file, 17th line of the file, etc.
-    G   17G
+:h index.txt    (for all commands)
+:h option-list
+:h quickref
 
 Help - cycle through all instances of a given topic
     :h <sometopic>Ctrl-D
 
-(then do completion / copy'n-paste the topic you're searching, or cycle
- through all the topics with repeated <TABS> ... Tip #229)
+(then do completion / copy'n-paste the topic you're searching, or
+ cycle through all the topics with repeated <TABS> ... Tip #229)
 
 Search the help files with grep
     :helpg
 
+" quickfix commands,
+jump fore & aft when using :helpg
+    :cnext          (mapped to Ctrl-N)
+    :cprevious      (mapped to Ctrl-P)
+
+First & Last position on a line
+    0 or ^              $
+
+Back & Forward one screen
+    Ctrl-B              Ctrl-F
+
+Last line of the file, 17th line of the file, etc.
+    G                   17G
+
 Find word under cursor, forwards / backwards
-    *
-    #
+    *                   #
 
 What * picks up depends upon:
     :h iskeyword
@@ -32,38 +37,44 @@ What * picks up depends upon:
 
 toggle between current and last cursor position
     ''
-    ``
+    `` (but I remapped this one...see below)
 
-insert previous search string in insert mode or at command line (:h i_CTRL-R):
-    C-r /
+Toggle between two files (or ":e #")
+    Ctrl-^  (same as Ctrl-6)
+    I've mapped this to <leader> ` and as I've set <leader> to ` then `` will
+    toggle between files...also mapped <leader><backspace> to Ctrl-^
 
-or insert the contents of one of these registers:    
-    '"'     the unnamed register, containing the text of
-            the last delete or yank
-    '%'     the current file name
-    '#'     the alternate file name
-    '*'     the clipboard contents (X11: primary selection)
-    '+'     the clipboard contents
-    '/'     the last search pattern
-    ':'     the last command-line
-    '.'     the last inserted text
-    '-'     the last small (less than a line) delete
-    '='     the expression register: you are prompted to
-            enter an expression (see |expression|)
+insert previous search string in insert mode or at command line (:h i_CTRL-R)
+    Ctrl-R /
 
-xp  reverse next two characters
-dL  delete to end of page, in other words, everything visible.
-C   chop off end of line and go into insert mode.
+or insert the contents of one of these registers following Ctrl-R:
+    "   unnamed register, containing the text of the last delete or yank
+    %   current file name
+    #   alternate file name
+    *   clipboard contents (X11: primary selection)
+    +   clipboard contents
+    /   last search pattern
+    :   last command-line
+    .   last inserted text
+    -   last small (less than a line) delete
+    =   expression register: prompted to enter an expression (see |expression|)
 
-Commands in insert mode:
-    Ctrl-W: delete a word backwards
-    Ctrl-K: insert a digraph (see :dig)
-    Ct-P/N: autocompletion
+delete to end of page, in other words, everything visible
+    dL
+
+chop off end of line and go into insert mode
+    C
+
+Delete a word backwards in insert mode
+    Ctrl-W
     
-To find more, try:
+To find more insert mode commands, try:
     :help i_CTRL-
 
-Open multiple files for editing:
+break undo sequence, start new change   :help i_CTRL-G_u
+    CTRL-G u
+
+Open multiple files for editing
     :args file1 file2 file-with-wildcard*
 
 Match brackets & tags
@@ -76,24 +87,26 @@ For example, to select everything between two html tags:
 Omnicompletion
     <c-x><c-o>
 
-Spell -- mappings start spellchecking in English, Spanish, & stop spellchecking:
-    se      ss      ns
-to suggest spellings for mispelled words:
+Spelling - toggle spellchecking on & off in English & Spanish (wrote function)
+    map <F5> :call ToggleSpellEng()<CR>
+    map <F6> :call ToggleSpellEsp()<CR>
+to suggest spellings for mispelled words
     z=
 next, previous misspelled word
     ]s or ]S        [s or [S
 
-Call dictionaries eng/spa, spa/eng, eng/spa, eng/lat, lat/eng, or all 
-installed dictionaries; <leader><space> + one of the following:
-    es  se  e2  E2  s2  S2  el  le  d
-
 Folding
     zo      opens a fold
     zc      closes a fold
+    zM      close all folds
+    zR      open all folds
 
 Tabs
-    :tabe <file>    open file in a new tab
+    :tabe <file>    open file in a new tab      mapped: <leader>tt
     :tabc           close current tab
+    
+close tab & delete buffer without closing window
+    mapped: <leader>t-
 
 Count words in text file
     g<C-g>
@@ -105,7 +118,7 @@ including the spaces on one side:
     caw (change a word) 
 
 yank a word at current cursor position
-    map <> mzlb"ayw`z
+    map <leader>yw :silent let @"= expand("<cword>")<CR>
 
 don't redraw screen while executing macros, registers and other commands 
 that have not been typed.  Also, updating the window title is postponed:
@@ -120,15 +133,15 @@ jump back to previous visual selection
 Save current file as "file-xyz.txt" and move to "file-xyz.txt"
     :sav file-xyz.txt
 
-Change readonly [RO] file to be read/write
-    :noro
+Change file to readonly [RO], or a readonly file to be read/write
+    :set ro
+    :set noro
 
 Delete a buffer, force-delete a buffer
     :bd     :bd!
 
 Delete a buffer without closing window
-    :bn<CR>:bw#<CR>
-    <leader>b-      (mapping for the above)
+    map <leader>b- :bn<CR>:bw#<CR>
 
 Delete all buffers except the current/named buffer (BufOnly.vim plugin)
     :Bonly  :Bufonly    :BufOnly
@@ -138,11 +151,25 @@ Close buffer, force-close buffer
     :bw!
 
 Close a window without deleting buffer
-    :close
-    <leader>w-      (mapping for the above)
+    <leader>w- :close<CR>
 
 Close all windows except for the current one
-    :only
+    :on[ly]
+
+previous buffer, next buffer
+    map <F1> :bp<CR>
+    map <F2> :bn<CR>
+
+previous window, next window
+    map <F3> <c-w>W
+    map <F4> <c-w>w
+
+Increase / Decrease window height
+    Ctrl-k
+    Ctrl-j
+Increase / Decrease window width
+    Ctrl-l
+    Ctrl-h
 
 Search & Replace -- search entire file (%) for every instance of [Õ] & replace with [']
     :% s/Õ/'/g
@@ -160,103 +187,85 @@ UPPERCASE, lowercase selected text
     gU
     gu
 
-Format line lengths
-    <leader>qq          formats paragraph to 79 chars max line length, with par
-    <leader>q<space>    par + add your own arguments
-    <leader>q8          set lines to be broken after 79 chars
-    <leader>q7 (69 chars), q6 (59 chars), q5 (49 chars) and q0 (not broken)
+UPPERCASE, lowercase character under cursor
+    ~
+    (I've also remapped ~ to twiddlecase, such that visually select text
+    will toggle between UPPER CASE, then lower case, then Title Case... 
+    http://vim.wikia.com/wiki/Switching_case_of_characters
 
-Formatting text:
-(vim@vim.org, Re: Text wrapping / reflowing - two questions)
-Yep.  See
-    :help gq
-    :help 25.1
-You can easily reformat the paragraph the cursor is currently in by 
-typing this in normal mode:
+break lines at 80, 63 columns, or don't break lines 
+    :set tw=80
+    :set tw=63
+    :set tw=0
+
+Reformat paragraph, filter through par (mappings calling external program)
+    <leader>qq  at 72 columns
+    <leader>q8  at 80 columns
+    <leader>q6  at 63 columns
+
+Reformat paragraph the cursor is currently on (normal mode)
     gqip
-have vim automatically reflow your text as you type:
-    set fo+=aw
-Do you have these set?
+
+Suggested settings (vim@vim.org, Re: Text wrapping / reflowing - two questions)
     setlocal formatoptions+=bcroqan2t	" better without w
     setlocal linebreak
+    set fo+=aw          " automatically reflow your text as you type
+    :help gq
+    :help 25.1
 
-commenting out lines
-with visual-block, select the lines (or just the beginning of the lines) you
-want to comment out, press I, and type the comment leader. It will only show up
-on the first line while you type, but when you hit <esc> to exit insert mode
-the insertion will be applied to every line.
+Toggle the comment state of the selected line(s), etc (NERD commenter plugin)
+    ,c<space>
+    command Nerd    :help NERDCommenter<CR>
 
+Comment out lines in visual-block mode:
+    select lines (or just beginning of the lines) you want to comment out,
+    press I, and type the comment leader. It will only show up on the first
+    line while you type, but when you hit <esc> to exit insert mode the
+    insertion will be applied to every line.
 
-commenting -- continue onto next line:
+commenting, continue onto next line
     :set fo=r
-or to turn it off:
+or to turn it off
     :set fo-=r
-see:
+see
     :help 'formatoptions'
     :help fo-table
 
-reload automatically when a file changes (like a test log):
+reload automatically when a file changes (like a test log)
     :set autoread           or      :set ar     (sets globally)
     :setlocal autoread      or      :setl ar    (just local buffer)
 
-Handy references:
-    :h option-list
-    :h quickref
+Diff a directory recursively and enable easy merging, copying and deleting of
+files and directories (dirdiff plugin)
+    :DirDiff /path/to/directory-one ~/directory-two
 
-
-**** Plugins ****
-
-NERD commenter -- commenting operations and styles invoked via key mappings 
-    ,c<space>  Toggles the comment state of the selected line(s), etc.
-    :Nerd (mapped to :help NERDCommenter)
-
-Diff a directory recursively and enable easy merging, copying and
-deleting of files and directories:
-    :DirDiff
-
-Zoom into and out of a window (ZoomWin):
-    :Ctrl-W o (also mapped to <leader>W)
+Zoom into and out of a window (ZoomWin plugin)
+    :Ctrl-W o (mapped to <leader>W)
 
 Browse to a url using the browser.vim plugin:
     :WebBrowser (mapped to <leader>ww)
 
-VtreeExplorer
-    :VTreeExplore (mapped to :Vt)
-    <leader>f
+VtreeExplorer file explorer (vtreeexplorer.vim plugin)
+    command Vt :VTreeExplore
+    map <silent> <leader>f :let treeExplCloseExp=1<CR>:VSTreeExplore<CR>
+    map <silent> <leader>F :let treeExplCloseExp=0<CR>:VSTreeExplore<CR>
 
-netrw file browser:
-    vim .
-Then press 'i' several times to cycle the display between four listing styles.
+netrw file browser (press 'i' multiple times to cycle between 4 listing styles)
+    vim .       (from shell prompt)
+    :o .        (from within Vim)
 
-
-View & open most recently used files -- mru.vim plugin
+Recently used files -- View & open (mru.vim plugin)
     :MRU (mapped to :Mr)
-        <CR>    opens the file
-        o       opens the file in a new window
-        u       updates the file list (useful if MRU window is left open)
-        q       closes the MRU window
+    <CR>    opens the file
+    o       opens the file in a new window
+    u       updates the file list (useful if MRU window is left open)
+    q       closes the MRU window
     :MRUedit <file>     edit a file in the MRU list
 
-NERD_tree
-    :NERDTree
-       o        open file in the previous window, expand/collapse directory
-       <tab>    open file in a new split window
-       x        close directory cursor is inside
-
-SynMark - Plugin, provides commands for defining highlighting at fixed locations (marks) in the text.
-    :vmap <> :SynMark Emph<CR>
- 
-http://www.vim.org/scripts/script.php?script_id=1128
-
-(colorscheme editor)
+HiColors - Colorscheme display and editor (hicolors.vim plugin)
     :h hicolors
 
-view a man page
-    K (shift-k) while placing cursor on the name of the command. To open a
-    particular section, precede with a number; 3K ls will open ls(3)
-    To always show every matching man page, set keywordprg to "man -a"
-
-Generate help tags file after installing a plugin, so its help is available:
+Generate help tags file after installing a plugin, so its help is available
     :helptags ~/.vim/doc
 
 install a vimball (requires the vimball plugin)
@@ -267,71 +276,46 @@ install a vimball (requires the vimball plugin)
 Preview contents of a vimball archive:
     :VimballList
 
+get version and info about which features were enabled when Vim was compiled
+    :ve[rsion]
 
+Show all options that differ from their default value
+    :se[t]
+    :se[t] all          ...all but terminal options
+    :se[t] termcap      ...all terminal options
 
-**** Mappings / external programs ****
-
-close the most recent open tag (for eg html editing) w/ closetag.vim:
+close the most recent open tag (for eg html editing) (closetag.vim plugin)
     <c-_>
 
 xml.vim   (:help xml-plugin)
     <LocalLeader>x   Place a custom XML tag to suround the selected text
     <LocalLeader>5   or   <LocalLeader>%  Normal or Visual, Jump to the begining or end tag
 
-previous buffer, next buffer
-    <leader><Up>
-    <leader><Down>
-
-previous window, next window
-    <leader><space>
-    <leader><Return> ("Enter" key)
-
-Increase / Decrease window height
-    Ctrl-k
-    Ctrl-j
-Increase / Decrease window width
-    Ctrl-l
-    Ctrl-h
-
-break lines at 80, 70, 63 columns, or don't break lines 
-    :T8
-    :T7
-    :T6
-    :T0
-
-Reformat paragraph, filter through par
-    <leader>qq  at 80 columns
-    <leader>q7  at 70 columns
-    <leader>q6  at 63 columns
-
-Title Case for visually selected text
-    ct
-
-Sentence Case for entire file, or for visually selected text
-    cs
-
-The color syntax files are here:
+The color syntax files are here
     /usr/share/vim/vim70/syntax/
 
 detection of filetype (for syntax coloring) is set here:
     ~/.vim/filetype.vim
 
-Manually set the filetype (in these examples, to rst):
-    :setf rst
-    :set ft=rst
-
-To see the current status
-    :filetype
-(will output something like: filetype detection:ON  plugin:ON  indent:OFF)
-
-If a file is not picking up on a filetype, detect the file type again:
+If a file is not picking up on a filetype, try to auto-detect the filetype
     :filetype detect
 
-break undo sequence, start new change   :help i_CTRL-G_u
-    CTRL-G u
+determine the filetype name used by Vim for a file
+    :set filetype
+
+Manually set the filetype (for examples to rst, or a Vim help file)
+    :setf rst
+    :set ft=rst
+    :set filetype=help
+
+To see the current status
+(will output something like: filetype detection:ON  plugin:ON  indent:OFF)
+    :filetype
 
 
 MAPPING AND MODES
+-----------------
+
     commands:				                    modes:
                                             Normal      Visual          Operator-pending
 :map   :noremap   :unmap   :mapclear        yes	        yes	            yes
@@ -350,30 +334,27 @@ MAPPING AND MODES
 :cmap  :cnoremap  :cunmap  :cmapclear	    -	        yes             -
 :lmap  :lnoremap  :lunmap  :lmapclear	    yes*        yes*            yes*
 
-----
 
-Set file encoding to UTF-16:
+ENCODINGS AND CHARACTERS
+------------------------
 
-    :set fenc=utf-16
+Set file encoding (for example to UTF-8)
+    :set fenc=utf-8
 
-
-Input a character using it's hex number:
-
+Input a character using it's hex number
     Ctrl-V u <hexnumber> <Return>
-
-For example, 
-
     Ctrl-V u f0 <Return>  will output this: ð
     Ctrl-V u 2122 <Return>  will output this: ™
 
 
-
 Digraphs
 
-press Ctrl-K <car1><car2>
-where char2 is one of the following:
+    press Ctrl-K <car1><car2>
 
-char name               char    meaning ~
+    where char2 is one of the following:
+
+CHAR NAME               CHAR    MEANING
+---------------------------------------
 Exclamation mark        !       Grave
 Apostrophe              '       Acute accent
 Greater-Than sign       >       Circumflex accent
@@ -391,7 +372,6 @@ Less-Than sign          <       Caron
 Zero                    0       Ring above
 Two                     2       Hook
 Nine                    9       Horn
-
 Equals                  =       Cyrillic
 Asterisk                *       Greek
 Percent sign            %       Greek/Cyrillic special
@@ -401,7 +381,9 @@ Four                    4       Bopomofo
 Five                    5       Hiragana
 Six                     6       Katakana
 
-ie: n?  --->   ñ
+example:
+    Ctrl-Kn?  --->   ñ
+
 
 More:
 
@@ -580,15 +562,5 @@ $	DO	0x24	 36	DOLLAR SIGN
 ý	y'	0xfd	253	LATIN SMALL LETTER Y WITH ACUTE
 þ	th	0xfe	254	LATIN SMALL LETTER THORN (Icelandic)
 ÿ	y:	0xff	255	LATIN SMALL LETTER Y WITH DIAERESIS
-
-
-
-
-
-
-_ _ _ _
-
-
-
 
 

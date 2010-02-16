@@ -1,13 +1,13 @@
 #!/bin/bash
 # (c)2008-2010 John Magolske, GPL v3
-# Last edit: 2010/02/12 Fri 22:46 PST
+# Last edit: 2010/02/13 Sat  8:55 PST
 
 usage="Usage: `basename $0` [0] [\"essid\"] [password]
-  A command line interface for bringing up wifi connections.
-Written for use on the XO laptop, but probably useful for other
-machines as well. An essid containing spaces must be quoted.
-The optional password is for use with wep protected connections.
-An argument of \"0\" will shut down the radio altogether.
+  A command line interface for bringing up wifi connections. An essid
+containing spaces must be quoted. The optional password is for use with
+wep protected connections. An argument of \"1\" will reload the wifi
+module (ipw2200 in this case), and an argument of \"0\" will shut down
+the wifi radio altogether.
 "
 
 if [ "$#" -eq 0 ]
@@ -21,12 +21,13 @@ if [ "$1" = "0" ]
 then
     if sudo iwconfig eth1 | grep "radio off" > /dev/null
     then
-        echo " ... the wifi radio is already off."
+        echo " ... the wifi radio is already off"
         exit 0
     else
+        echo -n " turning off the wifi radio ... "
         sudo iwconfig eth1 txpower off
         sudo /sbin/dhclient -r &> /dev/null
-        echo " ... turned the wifi radio off"
+        echo "done"
         exit 0
     fi
 

@@ -267,14 +267,13 @@ let treeExplNoList = 1      " don't list VtreeExplorer in buffer list
 let treeExplDirSort = 1     " sort directories first
 let treeExplVertical = 1    " split vertically
 let treeExplWinSize = 32    " make vertical split 32 columns wide
-let treeExplCloseExp = 1    " close VtreeExplorer after use
-"open VtreeExplorer
-"map <leader>f :echo Buftabs_show()<CR>:VSTreeExplore<CR>
-map <silent> <leader>f :VSTreeExplore<CR>
-map! <leader>f <esc>:VSTreeExplore<CR>
+let treeExplCloseExp = 1    " close after use
+" open VtreeExplorer & close after use
+map <silent> <leader>f :let treeExplCloseExp=1<CR>:VSTreeExplore<CR>
+map! <leader>f <esc>:let treeExplCloseExp=1<CR>:VSTreeExplore<CR>
 " open VtreeExplorer & leave the explorer open
 map <silent> <leader>F :let treeExplCloseExp=0<CR>:VSTreeExplore<CR>
-map! <leader>F <esc>:VSTreeExplore<CR>
+map! <leader>F <esc>:let treeExplCloseExp=0<CR>:VSTreeExplore<CR>
 command Vt :VTreeExplore
 
 " settings for the MRU (Most Recently Used files) plugin
@@ -513,10 +512,10 @@ nmap <leader>q  {!}par
 imap <leader>q  <Esc>{!}par 
 vmap <leader>q  !par 
 
-" set lines to be broken after 80, 70, 60 columns, or to be not broken (=0)
+" set lines to be broken after 80, 72, 62 columns, or to be not broken at all
 command T8 :set textwidth=80
-command T7 :set textwidth=70
-command T6 :set textwidth=60
+command T7 :set textwidth=72
+command T6 :set textwidth=62
 command T0 :set textwidth=0
 
 
@@ -533,8 +532,11 @@ noremap ; :
 noremap <space> 
 noremap <BackSpace> 
 
-" in insert mode: yank word, line; delete word, line; put; undo; redo; put
-imap <leader>yw <c-o>yw
+" yank the word the cursor is over
+imap <leader>yw <esc>:silent let @"= expand("<cword>")<CR>a
+map <leader>yw :silent let @"= expand("<cword>")<CR>
+
+" in insert mode: yank line, delete word, delete line, put, undo, redo, put
 imap <leader>yy <c-o>yy
 imap <leader>dw <c-o>dw
 imap <leader>dd <c-o>dd
@@ -575,35 +577,8 @@ imap <F4> <esc><C-w>wa
 map <F3> <c-w>W
 imap <F3> <esc><c-w>Wa
 
-
-"let g:SuperTab_tab = 0
-"function! ToggleSuperTabMap()
-    "if g:SuperTab_tab == 1
-        "let g:SuperTabMappingForward = "<leader><space>"
-        "let g:SuperTabMappingTabLiteral = "<tab>"
-        "so ~/.vim/plugin/supertab.vim
-        "let g:SuperTab_tab = 0
-        "echo "SuperTab key = <leader><space>"
-    "else
-        "let g:SuperTabMappingForward = "<tab>"
-        "let g:SuperTabMappingTabLiteral = "<leader><space>"
-        "so ~/.vim/plugin/supertab.vim
-        "let g:SuperTab_tab = 1
-        "echo "SuperTab key = <tab>"
-    "endif
-"endfunction
-"map <leader><tab> :call ToggleSuperTabMap()<CR>
-"imap <leader><tab> <esc>:call ToggleSuperTabMap()<CR>a
-
-
-
-"fun! HelpScreen()
-" ...
-"command -nargs=1 H :call HelpScreen()
-
+" open a help topic in another Screen tty... :H <topic>
 com! -complete=help -nargs=1 H :silent !screen -t 'Vim-help' vim -c 'help <args>' -c 'only'
-
-"command  -nargs=+ H :!screen -t 'John-Vim' vim -c help 
 
 "set helpheight=999      " full-screen help window
 

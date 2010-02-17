@@ -1,7 +1,8 @@
 "-----------------------------------------------------------------------
 " File:     vimrc - a configuration file for the vim text editor
-" By:       John Magolske @ http://b79.net/contact
+" By:       John Magolske - http://b79.net/contact
 " License:  GPL v3
+" Edit:     2010/02/16 Tue 22:12 PST 
 " Notes:    includes bits & tips from numerous sources ...
 "-----------------------------------------------------------------------
 

@@ -1,21 +1,19 @@
- V i m  --  Commonly Used commands
------------------------------------
+    V i m  :  Commonly Used commands
+-------------------------------------
 
-:h index.txt    (for all commands)
-:h option-list
-:h quickref
+Quick reference guide
+    :h quickref
+    :h index.txt    (for all commands)
 
-Help - cycle through all instances of a given topic
-    :h <sometopic>Ctrl-D
+Help, cycle through all instances of a given topic
+    :h <topic>Ctrl-D
+    (then do completion / copy'n-paste topic you're searching,
+     cycle through all the topics with repeated <TABS> ... )
 
-(then do completion / copy'n-paste the topic you're searching, or
- cycle through all the topics with repeated <TABS> ... Tip #229)
-
-Search the help files with grep
+Search the help files with helpgrep
     :helpg
 
-" quickfix commands,
-jump fore & aft when using :helpg
+jump fore & aft when using :helpg - quickfix commands
     :cnext          (mapped to Ctrl-N)
     :cprevious      (mapped to Ctrl-P)
 
@@ -39,15 +37,17 @@ toggle between current and last cursor position
     ''
     `` (but I remapped this one...see below)
 
-Toggle between two files (or ":e #")
-    Ctrl-^  (same as Ctrl-6)
-    I've mapped this to <leader> ` and as I've set <leader> to ` then `` will
-    toggle between files...also mapped <leader><backspace> to Ctrl-^
+Toggle between two files
+    :e #
+    Ctrl-^  (Ctrl-6)
+    map <leader>` <c-^> 
+    (I've set <leader> to ` so `` toggles between files)
+    map <leader><BackSpace> <c-^>
 
 insert previous search string in insert mode or at command line (:h i_CTRL-R)
     Ctrl-R /
 
-or insert the contents of one of these registers following Ctrl-R:
+Or insert the contents of one of these registers following Ctrl-R:
     "   unnamed register, containing the text of the last delete or yank
     %   current file name
     #   alternate file name
@@ -58,6 +58,18 @@ or insert the contents of one of these registers following Ctrl-R:
     .   last inserted text
     -   last small (less than a line) delete
     =   expression register: prompted to enter an expression (see |expression|)
+
+Display contents of all registers
+    :reg
+
+Paste from register 1
+    "1p
+
+Substitute "fred" with contents of register "a"
+    :s/fred/<c-r>a/g
+
+Replace something with nothing
+   :%s/foo
 
 delete to end of page, in other words, everything visible
     dL
@@ -96,8 +108,8 @@ next, previous misspelled word
     ]s or ]S        [s or [S
 
 Folding
-    zo      opens a fold
-    zc      closes a fold
+    zo      open a fold
+    zc      close a fold
     zM      close all folds
     zR      open all folds
 
@@ -105,8 +117,8 @@ Tabs
     :tabe <file>    open file in a new tab      mapped: <leader>tt
     :tabc           close current tab
     
-close tab & delete buffer without closing window
-    mapped: <leader>t-
+Close tab & delete buffer without closing window
+    nmap <leader>t- :bn<CR>:bw#<CR>:tabclose<CR>
 
 Count words in text file
     g<C-g>
@@ -132,6 +144,9 @@ jump back to previous visual selection
 
 Save current file as "file-xyz.txt" and move to "file-xyz.txt"
     :sav file-xyz.txt
+
+save file in another directory, but with the same name
+    :w /some/path/%:r
 
 Change file to readonly [RO], or a readonly file to be read/write
     :set ro
@@ -190,15 +205,15 @@ UPPERCASE, lowercase selected text
 UPPERCASE, lowercase character under cursor
     ~
     (I've also remapped ~ to twiddlecase, such that visually select text
-    will toggle between UPPER CASE, then lower case, then Title Case... 
-    http://vim.wikia.com/wiki/Switching_case_of_characters
+    will toggle between UPPER CASE, then lower case, then Title Case ... 
+    see http://vim.wikia.com/wiki/Switching_case_of_characters )
 
 break lines at 80, 63 columns, or don't break lines 
     :set tw=80
     :set tw=63
     :set tw=0
 
-Reformat paragraph, filter through par (mappings calling external program)
+Reformat paragraph, filter through par (calls external program, see my vimrc)
     <leader>qq  at 72 columns
     <leader>q8  at 80 columns
     <leader>q6  at 63 columns
@@ -242,7 +257,7 @@ files and directories (dirdiff plugin)
 Zoom into and out of a window (ZoomWin plugin)
     :Ctrl-W o (mapped to <leader>W)
 
-Browse to a url using the browser.vim plugin:
+Browse to a url (browser.vim plugin)
     :WebBrowser (mapped to <leader>ww)
 
 VtreeExplorer file explorer (vtreeexplorer.vim plugin)
@@ -252,7 +267,8 @@ VtreeExplorer file explorer (vtreeexplorer.vim plugin)
 
 netrw file browser (press 'i' multiple times to cycle between 4 listing styles)
     vim .       (from shell prompt)
-    :o .        (from within Vim)
+    :o .
+    :[Ex]plore
 
 Recently used files -- View & open (mru.vim plugin)
     :MRU (mapped to :Mr)
@@ -284,7 +300,11 @@ Show all options that differ from their default value
     :se[t] all          ...all but terminal options
     :se[t] termcap      ...all terminal options
 
-close the most recent open tag (for eg html editing) (closetag.vim plugin)
+Number the lines in the file
+    :%! nl -ba
+    :%!cat -n
+
+Close the most recent open tag (for eg html editing) (closetag.vim plugin)
     <c-_>
 
 xml.vim   (:help xml-plugin)
@@ -294,13 +314,13 @@ xml.vim   (:help xml-plugin)
 The color syntax files are here
     /usr/share/vim/vim70/syntax/
 
-detection of filetype (for syntax coloring) is set here:
+Detection of filetype (for syntax coloring) is set here:
     ~/.vim/filetype.vim
 
 If a file is not picking up on a filetype, try to auto-detect the filetype
     :filetype detect
 
-determine the filetype name used by Vim for a file
+Determine the filetype name used by Vim for a file
     :set filetype
 
 Manually set the filetype (for examples to rst, or a Vim help file)
@@ -563,4 +583,10 @@ $	DO	0x24	 36	DOLLAR SIGN
 þ	th	0xfe	254	LATIN SMALL LETTER THORN (Icelandic)
 ÿ	y:	0xff	255	LATIN SMALL LETTER Y WITH DIAERESIS
 
+
+========================================================
+
+
+Compliled By:   John Magolske   http://b79.net/contact
+Last Edit:      2010/02/16 Tue 22:35 PST
 
